@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'core.apps.CoreConfig',
     'api.apps.ApiConfig',
+    'products.apps.ProductsConfig',
 ]
 
 MIDDLEWARE = [
@@ -89,9 +90,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = 'ru-Ru'
 
 TIME_ZONE = 'Asia/Novosibirsk'
@@ -133,3 +131,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+SUPPLIER_ID = os.getenv('SUPPLIER_ID', 123456)
