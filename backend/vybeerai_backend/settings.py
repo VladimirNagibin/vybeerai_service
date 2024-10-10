@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'api.apps.ApiConfig',
     'products.apps.ProductsConfig',
+    'warehouses.apps.WarehousesConfig',
 ]
 
 MIDDLEWARE = [
