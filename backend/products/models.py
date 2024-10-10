@@ -6,52 +6,28 @@ from core.constants import (CLASSIFICATION_CODE_DEFAULT, CODE_EXT_MAX_LENGHT,
                             PRESENTATION_MAX_LENGTH)
 
 
-class Product(models.Model):
-    productExternalCode = models.CharField(
-        'Код в 1С',
-        max_length=CODE_EXT_MAX_LENGHT,
-        unique=True,
-    )
-    eanCode = models.CharField(
-        'Штрихкод',
-        max_length=EAN_MAX_LENGHT,
-        null=True,
-        blank=True,
-    )
-    productExternalName = models.CharField(
-        'Наименование в 1С',
-        max_length=NAME_MAX_LENGHT,
-        unique=True,
-    )
-    productName = models.CharField(
-        'Наименование',
-        max_length=NAME_MAX_LENGHT,
-        unique=True,
-        help_text='Наименование для выгрузки в Выбирай',
-    )
-    productClassificationExternalCode = models.CharField(
-        'Внешний код классификации продукта',
-        max_length=EAN_MAX_LENGHT,
-        default=CLASSIFICATION_CODE_DEFAULT,
-        help_text=('Внешний код классификации продукта. В текущей версии '
-                   'указывать значение "1"')
-    )
-    volume = models.FloatField(  # numeric(12, 4)
-        'Базовый объем',
-        validators=[MinValueValidator(0.0)])
-    package = models.CharField(
+class Package(models.Model):
+    packageName = models.CharField(
         'Тип единицы измерения',
         max_length=PACK_MAX_LENGHT,
         help_text='Тип единицы измерения(например: бутылка или банка или кег)',
     )
-    packageQty = models.FloatField(  # numeric(12, 4)
-        'Кол-во ед товара в уп',
-        validators=[MinValueValidator(0.0)],
-        help_text='Количество базовых единиц товара в упаковке',
-    )
-    description = models.TextField('Описание продукта')
-    isTare = models.BooleanField('Продукция является тарой', default=False)
+
+    class Meta:
+        ordering = ('packageName',)
+        verbose_name = 'тип единицы измерения'
+        verbose_name_plural = 'Типы единиц измерения'
+
+    def __str__(self):
+        return self.packageName[:PRESENTATION_MAX_LENGTH]
+
+
+class Pictograph(models.Model):
     pictograph = models.PositiveSmallIntegerField('Пиктограмма')
+    pictographName = models.CharField(
+        'Наименование пиктограммы',
+        max_length=PACK_MAX_LENGHT,
+    )
     # Справочные значения:
     # 1 - бутылка,
     # 2 - банка,
@@ -119,6 +95,69 @@ class Product(models.Model):
     # 64 - Попкорн,
     # 65 - Игрушки со сладостями.
     # Для дополнительных параметров обратиться в техническую поддержку.
+
+    class Meta:
+        ordering = ('pictographName',)
+        verbose_name = 'пиктограмма'
+        verbose_name_plural = 'Пиктограммы'
+
+    def __str__(self):
+        return self.pictographName[:PRESENTATION_MAX_LENGTH]
+
+
+class Product(models.Model):
+    productExternalCode = models.CharField(
+        'Код в 1С',
+        max_length=CODE_EXT_MAX_LENGHT,
+        unique=True,
+    )
+    eanCode = models.CharField(
+        'Штрихкод',
+        max_length=EAN_MAX_LENGHT,
+        null=True,
+        blank=True,
+    )
+    productExternalName = models.CharField(
+        'Наименование в 1С',
+        max_length=NAME_MAX_LENGHT,
+        unique=True,
+    )
+    productName = models.CharField(
+        'Наименование',
+        max_length=NAME_MAX_LENGHT,
+        unique=True,
+        help_text='Наименование для выгрузки в Выбирай',
+    )
+    productClassificationExternalCode = models.CharField(
+        'Внешний код классификации продукта',
+        max_length=EAN_MAX_LENGHT,
+        default=CLASSIFICATION_CODE_DEFAULT,
+        help_text=('Внешний код классификации продукта. В текущей версии '
+                   'указывать значение "1"')
+    )
+    volume = models.FloatField(  # numeric(12, 4)
+        'Базовый объем',
+        validators=[MinValueValidator(0.0)])
+    package = models.ForeignKey(
+        Package,
+        on_delete=models.CASCADE,
+        verbose_name='Тип единицы измерения',
+        related_name='products',
+        # help_text='Тип единицы измерения(например: бутылка или банка или кег)',
+    )
+    packageQty = models.FloatField(  # numeric(12, 4)
+        'Кол-во ед товара в уп',
+        validators=[MinValueValidator(0.0)],
+        help_text='Количество базовых единиц товара в упаковке',
+    )
+    description = models.TextField('Описание продукта')
+    isTare = models.BooleanField('Продукция является тарой', default=False)
+    pictograph = models.ForeignKey(
+        Pictograph,
+        on_delete=models.CASCADE,
+        verbose_name='Пиктограмма',
+        related_name='products',
+    )
     productSegmentExternalCode = models.CharField(
         'Внешний код сегмента',
         max_length=PACK_MAX_LENGHT,
@@ -161,13 +200,7 @@ class Product(models.Model):
         return self.productName[:PRESENTATION_MAX_LENGTH]
 
 
-class ProductAttribut(models.Model):
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        verbose_name='Товар',
-        related_name='attributes',
-    )
+class Attribut(models.Model):
     attributsName = models.CharField(
         'Наименование',
         max_length=PACK_MAX_LENGHT
@@ -187,6 +220,22 @@ class ProductAttribut(models.Model):
         'Признак отображения в карточке',
         help_text='Признак отображения атрибута в карточке товаров',
     )
+
+    class Meta:
+        verbose_name = 'атрибут'
+        verbose_name_plural = 'Атрибуты'
+
+    def __str__(self):
+        return self.attributsName[:PRESENTATION_MAX_LENGTH]
+
+
+class AttributValue(models.Model):
+    attribut = models.ForeignKey(
+        Attribut,
+        on_delete=models.CASCADE,
+        verbose_name='атрибут',
+        related_name='attributes_value',
+    )
     attributsValue = models.CharField(
         'Значение атрибута',
         max_length=PACK_MAX_LENGHT
@@ -200,11 +249,33 @@ class ProductAttribut(models.Model):
     )
 
     class Meta:
-        verbose_name = 'атрибут товара'
-        verbose_name_plural = 'Атрибуты'
+        verbose_name = 'значение атрибута'
+        verbose_name_plural = 'Значения атрибутов'
 
     def __str__(self):
-        return self.attributsName[:PRESENTATION_MAX_LENGTH]
+        return f'{self.attribut.attributsName} {self.attributsValue}'
+
+
+class ProductAttributValue(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Товар',
+        related_name='attribut_values',
+    )
+    attributValue = models.ForeignKey(
+        AttributValue,
+        on_delete=models.CASCADE,
+        verbose_name='Значение атрибута',
+        related_name='attribut_values',
+    )
+
+    class Meta:
+        verbose_name = 'значение атрибута товара'
+        verbose_name_plural = 'Значения атрибутов товаров'
+
+    def __str__(self):
+        return f'{self.product} {self.attributValue}'
 
 
 class ProductImages(models.Model):

@@ -133,3 +133,4 @@ SIMPLE_JWT = {
 }
 
 SUPPLIER_ID = os.getenv('SUPPLIER_ID', 123456)
+PORTAL = os.getenv('PORTAL', '127.0.0.1')
