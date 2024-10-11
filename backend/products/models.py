@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -199,6 +200,13 @@ class Product(models.Model):
     def __str__(self):
         return self.productName[:PRESENTATION_MAX_LENGTH]
 
+    def clean(self):
+        ...
+        # attributs = [attr_value.attributValue.attribut for
+        #             attr_value in self.attribut_values.all()]
+        # if len(attributs) != len(set(attributs)):
+        #    raise ValidationError('Выбрано несколько значений одного атрибута')
+
 
 class Attribut(models.Model):
     attributsName = models.CharField(
@@ -276,6 +284,13 @@ class ProductAttributValue(models.Model):
 
     def __str__(self):
         return f'{self.product} {self.attributValue}'
+
+    def clean(self):
+        if ProductAttributValue.objects.filter(
+            product=self.product,
+            attributValue__attribut=self.attributValue.attribut
+        ).count() > 1:
+            print('DUBLE')
 
 
 class ProductImages(models.Model):

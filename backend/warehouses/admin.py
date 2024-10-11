@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Outlet, ProductStock, Warehouse
-
+from orders.models import DeliveryDate, OperationOutlet, OutletPayForm
 
 @admin.register(Outlet)
 class OutletAdmin(admin.ModelAdmin):
@@ -11,8 +11,23 @@ class OutletAdmin(admin.ModelAdmin):
     list_filter = ('outletName',)
 
 
+class OperationOutletInline(admin.TabularInline):
+    model = OperationOutlet
+    extra = 0
+
+
+class DeliveryDateInline(admin.TabularInline):
+    model = DeliveryDate
+    extra = 0
+
+
+class PayFormInline(admin.TabularInline):
+    model = OutletPayForm
+    extra = 0
+
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
+    inlines = (OperationOutletInline, DeliveryDateInline, PayFormInline)
     list_display = ('warehouseExternalCode', 'customerExternalCode',
                     'warehouseName', 'outlet', 'allowTareReturn')
     list_editable = ('warehouseName',)

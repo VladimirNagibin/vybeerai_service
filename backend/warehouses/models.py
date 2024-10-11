@@ -50,6 +50,7 @@ class Warehouse(models.Model):
         max_length=NAME_EXT_MAX_LENGHT,
         help_text=('Если точка синхронизации не используется, '
                    'равно warehouseExternalCode'),
+        unique=True,
     )
     warehouseName = models.CharField(
         'Наименование склада',
@@ -91,17 +92,24 @@ class ProductStock(models.Model):
         verbose_name='товар',
         related_name='product_stocks',
     )
-    stock = models.FloatField('Остаток на складе',
-                              validators=[MinValueValidator(0.0)])
-    # numeric(13, 3)
-    # Необходимость передачи нулевого значения остатка зависит от:
-    # processingType = 0 – можно не передавать
-    # processingType = 1 – нужно передавать
+    stock = models.FloatField(  # numeric(13, 3)
+        'Остаток на складе',
+        validators=[MinValueValidator(0.0)],
+        help_text=('Необходимость передачи нулевого значения зависит от: '
+                   'processingType = 0 – можно не передавать '
+                   'processingType = 1 – нужно передавать')
+    )
 
     class Meta:
         ordering = ('warehouse', 'product')
         verbose_name = 'остатки продуктов на складах'
         verbose_name_plural = 'Остатки продуктов на складах'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('warehouse', 'product'),
+                name='unique_warehouse_product'
+            ),
+        )
 
     def __str__(self):
         return (f'{self.product} {self.warehouse} '
