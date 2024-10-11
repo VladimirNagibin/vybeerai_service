@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Outlet, ProductStock, Warehouse
 from orders.models import DeliveryDate, OperationOutlet, OutletPayForm
 
+
 @admin.register(Outlet)
 class OutletAdmin(admin.ModelAdmin):
     list_display = ('outletExternalCode', 'outletName',)
@@ -24,6 +25,7 @@ class DeliveryDateInline(admin.TabularInline):
 class PayFormInline(admin.TabularInline):
     model = OutletPayForm
     extra = 0
+
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):

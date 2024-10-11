@@ -1,16 +1,7 @@
 from django.contrib import admin
 
-from .models import Operation, PayForm, PriceList
-
-
-# class AttributInline(admin.TabularInline):
-#    model = ProductAttributValue
-#    extra = 0
-
-
-# class ImageInline(admin.TabularInline):
-#    model = ProductImages
-#    extra = 0
+from .models import (Denial, Operation, Order, OrderDetail, OrderHDenial,
+                     PayForm, PriceList, SyncOrder)
 
 
 @admin.register(Operation)
@@ -48,3 +39,64 @@ class PriceListAdmin(admin.ModelAdmin):
     list_editable = ('price',)
     search_fields = ('product',)
     list_filter = ('product',)
+
+
+class OrderDetailInline(admin.TabularInline):
+    model = OrderDetail
+    extra = 0
+
+
+class SyncOrderInline(admin.TabularInline):
+    model = SyncOrder
+    extra = 0
+
+
+class OrderHDenialInline(admin.TabularInline):
+    model = OrderHDenial
+    extra = 0
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = (OrderDetailInline, SyncOrderInline, OrderHDenialInline)
+    list_display = (
+        'orderNo',
+        'mainOrderNo',
+        'warehouse',
+        'payForm',
+        'deliveryDate',
+        'totalSum',
+        'vatSum',
+        'discount',
+        'creationDate',
+        'operation',
+        'deliveryAddress',
+        'comment',
+    )
+    # list_editable = ('price',)
+    search_fields = ('orderNo', 'warehouse')
+    list_filter = ('orderNo', 'warehouse')
+
+
+@admin.register(SyncOrder)
+class SyncOrderAdmin(admin.ModelAdmin):
+    list_display = ('order', 'statusOrder')
+    list_editable = ('statusOrder',)
+    search_fields = ('order',)
+    list_filter = ('order',)
+
+
+@admin.register(Denial)
+class DenialAdmin(admin.ModelAdmin):
+    list_display = ('denialExternalCode', 'name', 'denialCode')
+    list_editable = ('name',)
+    search_fields = ('name',)
+    list_filter = ('name',)
+
+
+@admin.register(OrderHDenial)
+class OrderHDenialAdmin(admin.ModelAdmin):
+    list_display = ('order', 'denial')
+    list_editable = ('denial',)
+    search_fields = ('denial',)
+    list_filter = ('denial',)

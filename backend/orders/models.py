@@ -303,10 +303,11 @@ class Order(models.Model):
         default_related_name = 'orders'
 
     def __str__(self):
-        return f'{self.orderNo} {self.warehouse}'
+        return (f'{self.orderNo} {self.warehouse} '
+                f'{self.comment[:PRESENTATION_MAX_LENGTH]}')
 
 
-class orderDetail(models.Model):
+class OrderDetail(models.Model):
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
@@ -348,20 +349,81 @@ class orderDetail(models.Model):
         verbose_name = 'товар в заказе'
         verbose_name_plural = 'Товары в заказе'
         default_related_name = 'products_in_order'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('order', 'product'),
+                name='unique_order_product'
+            ),
+        )
 
     def __str__(self):
-        return f'{self.orderNo} {self.warehouse}'
+        return f'{self.order} {self.product} {self.qty}'
 
 
 class SyncOrder(models.Model):
-    order = models.ForeignKey(
+    order = models.OneToOneField(
         Order,
         on_delete=models.CASCADE,
         verbose_name='Заказ',
-        related_name='products',
+        related_name='syncorders',
     )
     statusOrder = models.PositiveSmallIntegerField(
         'Статус состояния заказа',
         help_text=('1 - новый, 2 - выгружен в Б24, 3 - информация о приёме '
                    'отправлена в портал'),
     )
+
+    class Meta:
+        ordering = ('order',)
+        verbose_name = 'статус заказа'
+        verbose_name_plural = 'Статус заказов'
+
+    def __str__(self):
+        return f'{self.order} {self.statusOrder}'
+
+
+class Denial(models.Model):
+    denialExternalCode = models.CharField(
+        'Внешний код причины отказа',
+        max_length=NAME_EXT_MAX_LENGHT,
+    )
+    name = models.CharField(
+        'Название причины отказа',
+        max_length=NAME_MAX_LENGHT,
+    )
+    denialCode = models.CharField(
+        'Дополнительный Код отказа заказа',
+        max_length=NAME_EXT_MAX_LENGHT,
+        help_text='если доп кода нет то указывать denialExternalCode'
+    )
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'причина отказа'
+        verbose_name_plural = 'Причины отказа'
+
+    def __str__(self):
+        return self.name
+
+
+class OrderHDenial(models.Model):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='Заказ',
+        related_name='order_denials',
+    )
+    denial = models.ForeignKey(
+        Denial,
+        on_delete=models.CASCADE,
+        verbose_name='причина отказа',
+        related_name='orders_denial',
+    )
+
+    class Meta:
+        ordering = ('order',)
+        verbose_name = 'причина отказа заказа'
+        verbose_name_plural = 'Причины отказа заказов'
+
+    def __str__(self):
+        return f'{self.order} {self.denial}'
