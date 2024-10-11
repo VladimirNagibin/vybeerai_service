@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (Denial, Operation, Order, OrderDetail, OrderHDenial,
-                     PayForm, PriceList, SyncOrder)
+                     OrderInvoice, PayForm, PriceList, SalOutDetail, SyncOrder)
 
 
 @admin.register(Operation)
@@ -100,3 +100,25 @@ class OrderHDenialAdmin(admin.ModelAdmin):
     list_editable = ('denial',)
     search_fields = ('denial',)
     list_filter = ('denial',)
+
+
+class SalOutDetailInline(admin.TabularInline):
+    model = SalOutDetail
+    extra = 0
+
+
+@admin.register(OrderInvoice)
+class OrderInvoiceAdmin(admin.ModelAdmin):
+    inlines = (SalOutDetailInline, )
+    list_display = (
+        'order',
+        'date',
+        'invoiceExternalCode',
+        'invoiceNo',
+        'warehouse',
+        'totalSum',
+        'vatSum',
+    )
+    # list_editable = ('price',)
+    search_fields = ('invoiceNo', 'warehouse')
+    list_filter = ('invoiceNo', 'warehouse')

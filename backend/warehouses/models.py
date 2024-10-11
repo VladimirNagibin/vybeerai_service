@@ -102,8 +102,8 @@ class ProductStock(models.Model):
 
     class Meta:
         ordering = ('warehouse', 'product')
-        verbose_name = 'остатки продуктов на складах'
-        verbose_name_plural = 'Остатки продуктов на складах'
+        verbose_name = 'остатки товаров на складах'
+        verbose_name_plural = 'Остатки товаров на складах'
         constraints = (
             models.UniqueConstraint(
                 fields=('warehouse', 'product'),

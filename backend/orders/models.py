@@ -2,9 +2,9 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from core.constants import (NAME_EXT_MAX_LENGHT, DEAD_LINE_MAX_LENGHT,
-                            NAME_MAX_LENGHT, COMMENT_MAX_LENGHT,
-                            PRESENTATION_MAX_LENGTH)
+from core.constants import (CODE_EXT_MAX_LENGHT, COMMENT_MAX_LENGHT,
+                            DEAD_LINE_MAX_LENGHT, NAME_EXT_MAX_LENGHT,
+                            NAME_MAX_LENGHT, PRESENTATION_MAX_LENGTH)
 from products.models import Product
 from warehouses.models import Warehouse
 
@@ -52,7 +52,7 @@ class OperationOutlet(models.Model):
     )
 
     class Meta:
-        ordering = ('operation',)
+        ordering = ('warehouse', 'operation')
         verbose_name = 'операция по торговой точке'
         verbose_name_plural = 'Операции по торговым точкам'
         constraints = (
@@ -63,7 +63,7 @@ class OperationOutlet(models.Model):
         )
 
     def __str__(self):
-        return f'{self.operation} {self.warehouse}'
+        return f'{self.warehouse} {self.operation}'
 
 
 class DeliveryDate(models.Model):
@@ -162,15 +162,9 @@ class OutletPayForm(models.Model):
         ordering = ('payForm',)
         verbose_name = 'форма оплаты по торговой точке'  # Тип цены
         verbose_name_plural = 'форма оплаты по торговым точкам'
-        constraints = (
-            models.UniqueConstraint(
-                fields=('warehouse', 'payForm'),
-                name='unique_warehouse_payForm'
-            ),
-        )
 
     def __str__(self):
-        return f'{self.payForm} {self.warehouse}'
+        return f'{self.warehouse} {self.payForm}'
 
 
 class PriceList(models.Model):
@@ -223,13 +217,13 @@ class PriceList(models.Model):
         default_related_name = 'prices'
         constraints = (
             models.UniqueConstraint(
-                fields=('warehouse', 'payForm'),
+                fields=('product', 'warehouse', 'payForm'),
                 name='unique_warehouse_product_price'
             ),
         )
 
     def __str__(self):
-        return f'{self.payForm} {self.warehouse}'
+        return f'{self.product} {self.price}'
 
 
 class Order(models.Model):
@@ -303,7 +297,7 @@ class Order(models.Model):
         default_related_name = 'orders'
 
     def __str__(self):
-        return (f'{self.orderNo} {self.warehouse} '
+        return (f'Заказ: {self.orderNo} склад:{self.warehouse} '
                 f'{self.comment[:PRESENTATION_MAX_LENGTH]}')
 
 
@@ -427,3 +421,80 @@ class OrderHDenial(models.Model):
 
     def __str__(self):
         return f'{self.order} {self.denial}'
+
+
+class OrderInvoice(models.Model):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='Заказ',
+        related_name='invoice',
+    )
+    date = models.DateField('Дата продажи продукции')
+    invoiceExternalCode = models.CharField(
+        'Внешний код счета/фактуры',
+        max_length=NAME_EXT_MAX_LENGHT,
+    )
+    invoiceNo = models.CharField(
+        'Номер счета/фактуры',
+        max_length=CODE_EXT_MAX_LENGHT,
+    )
+    warehouse = models.ForeignKey(
+        Warehouse,
+        on_delete=models.CASCADE,
+        verbose_name='склад',
+        related_name='invoices',
+    )
+    totalSum = models.FloatField(  # numeric(19,5)
+        'Общая сумма отгрузки заказа',
+        validators=[MinValueValidator(0.0)],
+    )
+    vatSum = models.FloatField(  # numeric(19,5)
+        'Сумма НДС',
+        validators=[MinValueValidator(0.0)],
+    )
+
+    class Meta:
+        ordering = ('order',)
+        verbose_name = 'счет/фактура'
+        verbose_name_plural = 'Счет/фактуры'
+
+    def __str__(self):
+        return f'Счет: {self.invoiceExternalCode} склад: {self.warehouse}'
+
+
+class SalOutDetail(models.Model):
+    orderInvoice = models.ForeignKey(
+        OrderInvoice,
+        on_delete=models.CASCADE,
+        verbose_name='счет/фактура',
+        related_name='products_in_invoice',
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='товар',
+    )
+    productQty = models.FloatField(  # numeric(13,3)
+        'количество отгруженной продукции',
+        validators=[MinValueValidator(0.0)],
+    )
+    price = models.FloatField(  # numeric(15,8)
+        'цена',
+        validators=[MinValueValidator(0.0)],
+    )
+    vat = models.CharField(
+        'НДС',
+        max_length=CODE_EXT_MAX_LENGHT,
+    )
+
+    class Meta:
+        ordering = ('orderInvoice',)
+        verbose_name = 'товар в счете'
+        verbose_name_plural = 'Товары в счете'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('orderInvoice', 'product'),
+                name='unique_orderInvoice_product'
+            ),
+        )
