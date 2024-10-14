@@ -325,7 +325,7 @@ class OrderDetail(models.Model):
         validators=[MinValueValidator(0.0)],
     )
     vat = models.FloatField(  # numeric(18,2)
-        'Ставка НДС',
+        'Ставка НДС(%)',
         validators=[MinValueValidator(0.0)],
     )
     discount = models.FloatField(  # numeric(9,2)
@@ -412,6 +412,11 @@ class OrderHDenial(models.Model):
         on_delete=models.CASCADE,
         verbose_name='причина отказа',
         related_name='orders_denial',
+    )
+    statusOrderDenial = models.PositiveSmallIntegerField(
+        'Статус состояния отправки причины неудачи',
+        help_text=('1 - новый, 2 - выгружен в портал'),
+        default=1
     )
 
     class Meta:

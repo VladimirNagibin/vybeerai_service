@@ -144,7 +144,7 @@ class Product(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Тип единицы измерения',
         related_name='products',
-        # help_text='Тип единицы измерения(например: бутылка или банка или кег)',
+        help_text='Тип единицы измерения(например: бутылка или банка или кег)',
     )
     packageQty = models.FloatField(  # numeric(12, 4)
         'Кол-во ед товара в уп',
