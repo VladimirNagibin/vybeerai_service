@@ -48,8 +48,13 @@ class PictographAdmin(admin.ModelAdmin):
     list_filter = ('pictographName',)
 
 
+class AttributValueInline(admin.TabularInline):
+    model = AttributValue
+    extra = 0
+
 @admin.register(Attribut)
 class AttributAdmin(admin.ModelAdmin):
+    inlines = (AttributValueInline,)
     list_display = ('attributsName', 'attributsNameSortOrder', 'isFilter',
                     'isCardDetailsProduct')
     list_editable = ('attributsNameSortOrder', 'isFilter',
