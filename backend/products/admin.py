@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.utils.safestring import mark_safe
 
+from orders.models import PriceList
 from .models import (Attribut, AttributValue, Package, Pictograph, Product,
                      ProductAttributValue, ProductImages)
 
@@ -19,9 +20,14 @@ class ImageInline(admin.TabularInline):
     extra = 0
 
 
+class PriceListInline(admin.TabularInline):
+    model = PriceList
+    extra = 0
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = (AttributInline, ImageInline)
+    inlines = (AttributInline, ImageInline, PriceListInline)
     list_display = (
         'productExternalCode',
         'productExternalName',
@@ -51,6 +57,7 @@ class PictographAdmin(admin.ModelAdmin):
 class AttributValueInline(admin.TabularInline):
     model = AttributValue
     extra = 0
+
 
 @admin.register(Attribut)
 class AttributAdmin(admin.ModelAdmin):

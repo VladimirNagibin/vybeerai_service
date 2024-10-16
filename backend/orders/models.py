@@ -185,6 +185,7 @@ class PriceList(models.Model):
     )
     productType = models.PositiveSmallIntegerField(
         'тип продукта',
+        default=0,
         help_text=('Если на точке синхронизации установлен признак '
                    'isUsePromo=0, то принимается тип продукта:'
                    'для формы оплаты "1 - Заказ"'
@@ -207,6 +208,7 @@ class PriceList(models.Model):
     )
     vat = models.FloatField(  # numeric(5,2)
         'Значение ставки НДС (%)',
+        default=0.0,
         validators=[MinValueValidator(0.0)],
     )
 
@@ -261,10 +263,12 @@ class Order(models.Model):
     vatSum = models.FloatField(  # numeric(18,5)
         'Сумма начисленного НДС',
         validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
     discount = models.FloatField(  # numeric(9,2)
         'Скидка',
         validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
     creationDate = models.DateTimeField('Время и дата оформления заказа')
     operation = models.ForeignKey(
@@ -327,10 +331,12 @@ class OrderDetail(models.Model):
     vat = models.FloatField(  # numeric(18,2)
         'Ставка НДС(%)',
         validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
     discount = models.FloatField(  # numeric(9,2)
         'Процент скидки',
         validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
     # isReturnable
     # Количество возвращаемой тары (заполняется когда isReturn заполнено)
@@ -457,6 +463,7 @@ class OrderInvoice(models.Model):
     vatSum = models.FloatField(  # numeric(19,5)
         'Сумма НДС',
         validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
 
     class Meta:
@@ -491,6 +498,7 @@ class SalOutDetail(models.Model):
     vat = models.CharField(
         'НДС',
         max_length=CODE_EXT_MAX_LENGHT,
+        default='БЕЗ НДС',
     )
 
     class Meta:

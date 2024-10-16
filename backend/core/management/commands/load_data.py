@@ -1,16 +1,17 @@
 import csv
 
-from django.apps import apps
-from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.db import IntegrityError, connection
 
-from products.models import (Package, Pictograph, Product, Attribut,
-                             AttributValue, ProductAttributValue)
-# from users.models import SubscriptionUser
+from orders.models import (DeliveryDate, Denial, Operation, OperationOutlet,
+                           Order, OrderDetail, OrderHDenial, OrderInvoice,
+                           OutletPayForm, PayForm, PriceList, SalOutDetail,
+                           SyncOrder)
+from products.models import (Attribut, AttributValue, Package, Pictograph,
+                             Product, ProductAttributValue, ProductImages)
+from warehouses.models import Outlet, Warehouse, ProductStock
 
-User = get_user_model()
 
 DIR_DATA = 'data'
 DATA = (
@@ -35,6 +36,61 @@ DATA = (
     ('productAttributValue.csv',
      ProductAttributValue,
      ['id', 'product_id', 'attributValue_id']),
+    ('outlet.csv',
+     Outlet,
+     ['id', 'outletExternalCode', 'outletName']),
+    ('warehouse.csv',
+     Warehouse,
+     ['id', 'warehouseExternalCode', 'customerExternalCode', 'warehouseName',
+      'outlet_id']),
+    ('productStock.csv',
+     ProductStock,
+     ['id', 'warehouse_id', 'product_id', 'stock']),
+    ('operation.csv',
+     Operation,
+     ['id', 'operationExternalCode', 'operationName']),
+    ('operationOutlet.csv',
+     OperationOutlet,
+     ['id', 'operation_id', 'warehouse_id', 'stock']),
+    ('deliveryDate.csv',
+     DeliveryDate,
+     ['id', 'warehouse_id', 'deliveryDate', 'deadLine', 'minSum']),
+    ('payForm.csv',
+     PayForm,
+     ['id', 'payFormExternalCode', 'payFormName']),
+    ('outletPayForm.csv',
+     OutletPayForm,
+     ['id', 'payForm_id', 'warehouse_id']),
+    ('priceList.csv',
+     PriceList,
+     ['id', 'payForm_id', 'warehouse_id', 'product_id', 'price']),
+    ('order.csv',
+     Order,
+     ['id', 'orderNo', 'warehouse_id', 'payForm_id', 'deliveryDate',
+      'totalSum', 'creationDate', 'operation_id', 'deliveryAddress',
+      'comment', 'isReturn', 'oLCardType']),
+    ('orderDetail.csv',
+     OrderDetail,
+     ['id', 'order_id', 'product_id', 'price', 'basePrice', 'qty']),
+    ('syncOrder.csv',
+     SyncOrder,
+     ['id', 'order_id', 'statusOrder']),
+    ('denial.csv',
+     Denial,
+     ['id', 'denialExternalCode', 'name', 'denialCode']),
+    ('orderHDenial.csv',
+     OrderHDenial,
+     ['id', 'order_id', 'denial_id', 'statusOrderDenial']),
+    ('orderInvoice.csv',
+     OrderInvoice,
+     ['id', 'order_id', 'date', 'invoiceExternalCode', 'invoiceNo',
+      'warehouse_id', 'totalSum']),
+    ('salOutDetail.csv',
+     SalOutDetail,
+     ['id', 'orderInvoice_id', 'product_id', 'productQty', 'price']),
+    ('productImages.csv',
+     ProductImages,
+     ['id', 'product_id', 'image']),
 )
 
 
@@ -52,9 +108,6 @@ class Command(BaseCommand):
                         object, _ = obj.objects.update_or_create(
                             **object_value
                         )
-                        if obj == User:
-                            object.set_password(object_value['password'])
-                            object.save()
                     except IntegrityError:
                         self.stdout.write(f'Файл {filename} не корректные '
                                           f'данные: {object_value} для '
