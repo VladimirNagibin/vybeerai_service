@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from orders.models import PriceList
 from .models import (Attribut, AttributValue, Package, Pictograph, Product,
                      ProductAttributValue, ProductImages)
-
+from warehouses.models import ProductStock
 
 admin.site.unregister(Group)
 
@@ -25,9 +25,15 @@ class PriceListInline(admin.TabularInline):
     extra = 0
 
 
+class ProductStockInline(admin.TabularInline):
+    model = ProductStock
+    extra = 0
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = (AttributInline, ImageInline, PriceListInline)
+    inlines = (AttributInline, ImageInline, ProductStockInline,
+               PriceListInline)
     list_display = (
         'productExternalCode',
         'productExternalName',
