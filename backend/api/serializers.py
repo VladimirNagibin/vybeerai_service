@@ -13,6 +13,7 @@ User = get_user_model()
 
 class UserTokenCreationSerializer(serializers.Serializer):
     """Сериализатор для получения токена пользователем."""
+
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
@@ -40,6 +41,7 @@ class ProductStockSerializer(serializers.ModelSerializer):
 
 class StocksSerializer(serializers.Serializer):
     """Сериалайзер для загрузки остатков"""
+
     stocks = ProductStockSerializer(many=True)
 
     class Meta:
@@ -81,6 +83,7 @@ class PriceListSerializer(serializers.ModelSerializer):
 
 class PricesSerializer(serializers.Serializer):
     """Сериалайзер для загрузки цен"""
+
     prices = PriceListSerializer(many=True)
 
     class Meta:
