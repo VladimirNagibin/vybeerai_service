@@ -180,3 +180,5 @@ cython_debug/
 
 # папки со статикой и медиа
 media/
+
+cache/

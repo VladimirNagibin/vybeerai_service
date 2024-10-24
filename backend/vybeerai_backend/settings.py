@@ -134,7 +134,14 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-SUPPLIER_ID = os.getenv('SUPPLIER_ID', 123456)
-PORTAL = os.getenv('PORTAL', '127.0.0.1')
-LOGIN_PORTAL = os.getenv('LOGIN_PORTAL', 'LOGIN_PORTAL')
-PASSWORD_PORTAL = os.getenv('PASSWORD_PORTAL', 'PASSWORD_PORTAL')
+# SUPPLIER_ID = os.getenv('SUPPLIER_ID', 123456)
+# PORTAL = os.getenv('PORTAL', '127.0.0.1')
+# LOGIN_PORTAL = os.getenv('LOGIN_PORTAL', 'LOGIN_PORTAL')
+# PASSWORD_PORTAL = os.getenv('PASSWORD_PORTAL', 'PASSWORD_PORTAL')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache'),
+    }
+}

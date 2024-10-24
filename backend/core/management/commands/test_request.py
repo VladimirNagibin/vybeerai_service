@@ -7,8 +7,9 @@ class Command(BaseCommand):
     help = 'Send a request.'
 
     def handle(self, *args, **kwargs):
+        send_request = SendRequest()
         self.stdout.write(self.style.SUCCESS(
-            SendRequest.product_warehouses()
+            send_request.product_warehouses()
         ))
 
     def add_arguments(self, parser):
