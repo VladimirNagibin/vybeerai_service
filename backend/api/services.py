@@ -4,6 +4,7 @@ import os
 import telegram
 from dotenv import load_dotenv
 
+from .exceptions import NotFoundDataException, NotFoundEndpointException
 from warehouses.models import Warehouse
 
 load_dotenv()
@@ -11,11 +12,15 @@ load_dotenv()
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
+ENDPOINTS = {
+    'productWarehouses': '/Warehouse/productWarehouses/',
+}
 
-def get_endpoint_data(way):
+
+def get_data(way):
+    """Get data for request."""
+    data = []
     if way == 'productWarehouses':
-        endpoint = '/Warehouse/productWarehouses/'
-        data = []
         for warehouse in Warehouse.objects.all():
             data.append({
                 'warehouseExternalCode': warehouse.warehouseExternalCode,
@@ -23,7 +28,20 @@ def get_endpoint_data(way):
                 'warehouseName': warehouse.warehouseName,
                 'status': '2',
             })
-    return (endpoint, data)
+    if data:
+        return data
+    raise NotFoundDataException(f'Not found data for {way}')
+
+
+def get_endpoint_data(way):
+    """Get endpoint and data."""
+    try:
+        endpoint_data = (ENDPOINTS[way], get_data(way))
+    except KeyError:
+        raise NotFoundEndpointException(f'Not found endpoint for {way}')
+    except NotFoundDataException as e:
+        raise e
+    return endpoint_data
 
 
 class SendMessage:

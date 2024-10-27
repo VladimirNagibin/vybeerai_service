@@ -3,7 +3,8 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .exceptions import TokenReceivingException, SendRequestException
+from .exceptions import (NotFoundDataException, NotFoundEndpointException,
+                         TokenReceivingException, SendRequestException)
 from .send_requests import SendRequest
 from .serializers import (PriceListSerializer, PricesSerializer,
                           ProductStockSerializer, StocksSerializer,
@@ -17,8 +18,13 @@ from warehouses.models import ProductStock
 @permission_classes((AllowAny, ))
 def send_request(request, way):
     """Вью для отправки запроса."""
-    endpoint, data = get_endpoint_data(way)
     error = ''
+    try:
+        endpoint, data = get_endpoint_data(way)
+    except NotFoundEndpointException as e:
+        return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+    except NotFoundDataException as e:
+        return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
     try:
         response = SendRequest.send_request_token(endpoint, data)
         return Response(response, status=status.HTTP_200_OK)
