@@ -4,7 +4,7 @@ import os
 import telegram
 from dotenv import load_dotenv
 
-from warehouses.models import Warehouse 
+from warehouses.models import Warehouse
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 def get_endpoint_data(way):
     if way == 'productWarehouses':
-        endpoint = '/Warehouse/productWarehouses'
+        endpoint = '/Warehouse/productWarehouses/'
         data = []
         for warehouse in Warehouse.objects.all():
             data.append({
