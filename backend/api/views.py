@@ -3,11 +3,32 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from .exceptions import TokenReceivingException, SendRequestException
+from .send_requests import SendRequest
 from .serializers import (PriceListSerializer, PricesSerializer,
                           ProductStockSerializer, StocksSerializer,
                           UserTokenCreationSerializer)
+from .services import get_endpoint_data
 from orders.models import PriceList
 from warehouses.models import ProductStock
+
+
+@api_view(('POST', ))
+@permission_classes((AllowAny, ))
+def send_request(request, way):
+    """Вью для отправки запроса."""
+    endpoint, data = get_endpoint_data(way)
+    error = ''
+    try:
+        response = SendRequest.send_request_token(endpoint, data)
+        return Response(response, status=status.HTTP_200_OK)
+    except TokenReceivingException as e:
+        error = e
+    except SendRequestException as e:
+        error = e
+    except Exception as e:
+        error = e
+    return Response(str(error), status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(('POST', ))
