@@ -14,6 +14,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 ENDPOINTS = {
     'productWarehouses': '/Warehouse/productWarehouses/',
+    'loadProduct': '/Product/loadProduct/',
 }
 
 
@@ -28,6 +29,8 @@ def get_data(way):
                 'warehouseName': warehouse.warehouseName,
                 'status': '2',
             })
+    elif way == 'loadProduct':
+        data.append({'key': 'value'})
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')
