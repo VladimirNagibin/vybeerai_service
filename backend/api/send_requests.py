@@ -9,7 +9,6 @@ from rest_framework import status
 
 from .exceptions import SendRequestException, TokenReceivingException
 from .services import SendMessage
-from warehouses.models import Warehouse
 
 load_dotenv()
 

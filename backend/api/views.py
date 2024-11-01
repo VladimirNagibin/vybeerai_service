@@ -21,12 +21,14 @@ def send_request(request, way):
     error = ''
     try:
         endpoint, data = get_endpoint_data(way)
+        # status = 2 - change or insert / 9 - delete
     except NotFoundEndpointException as e:
         return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
     except NotFoundDataException as e:
         return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
     try:
         response = SendRequest.send_request_token(endpoint, data)
+        # processingType = 0 - all data / 1 - only for excange
         return Response(response, status=status.HTTP_200_OK)
     except TokenReceivingException as e:
         error = e

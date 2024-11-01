@@ -101,6 +101,7 @@ class Product(models.Model):
         help_text=('Данный код должен быть уникальным ключем для объединения '
                    'данных по сегменту.'),
     )
+    active = models.BooleanField('Товар выгружается', default=True)
     # productExternalCode2 = models.CharField(
     #    'Код продукта',
     #    max_length=EAN_MAX_LENGHT,

@@ -25,7 +25,7 @@ DATA = (
      Product,
      ['id', 'productExternalCode', 'eanCode', 'productExternalName',
       'productName', 'volume', 'package_id', 'description',
-      'pictograph_id']),
+      'pictograph_id', 'active']),
     ('attribut.csv',
      Attribut,
      ['id', 'attributsName', 'attributsNameSortOrder', 'isFilter',
