@@ -5,7 +5,8 @@ import telegram
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from orders.models import DeliveryDate, OperationOutlet, OutletPayForm
+from orders.models import (DeliveryDate, OperationOutlet, OutletPayForm,
+                           PriceList)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
 
@@ -25,6 +26,8 @@ ENDPOINTS = {
     'operations': '/Order/operations/',
     'deliveryDates': '/Order/deliveryDates/',
     'payForms': '/PayForm/payForms/',
+    'outletPayForms': '/PayForm/outletPayForms/',
+    'priceLists': '/PayForm/priceLists/',
 }
 
 
@@ -147,6 +150,19 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'minSum': delivery_date.minSum,
                 'status': status,
             })
+    elif way == 'outletPayForms':
+        for pay_forms in OutletPayForm.objects.all():
+            data.append({
+                'outletExternalCode': pay_forms
+                .warehouse
+                .outlet
+                .outletExternalCode,
+                'payFormExternalCode': pay_forms.payForm.payFormExternalCode,
+                'customerExternalCode': pay_forms
+                .warehouse
+                .customerExternalCode,
+                'status': status,
+            })
     elif way == 'payForms':
         for pay_forms in OutletPayForm.objects.all():
             data.append({
@@ -161,6 +177,19 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'orderTypeExternalCode': pay_forms
                 .payForm
                 .orderTypeExternalCode,
+                'status': status,
+            })
+    elif way == 'priceLists':
+        for price_list in PriceList.objects.filter(product__active=True):
+            data.append({
+                'payFormExternalCode': price_list.payForm.payFormExternalCode,
+                'customerExternalCode': price_list
+                .warehouse
+                .customerExternalCode,
+                'productExternalCode': price_list.product.productExternalCode,
+                'productType': price_list.productType,
+                'price': price_list.price,
+                'vat': price_list.vat,
                 'status': status,
             })
     if data:
