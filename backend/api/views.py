@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from .exceptions import (NotFoundDataException, NotFoundEndpointException,
                          TokenReceivingException, SendRequestException)
 from .send_requests import SendRequest
-from .serializers import (PriceListSerializer, PricesSerializer,
-                          ProductStockSerializer, StocksSerializer,
-                          UserTokenCreationSerializer)
+from .serializers import (CheckProductsSerializer, PriceListSerializer,
+                          PricesSerializer, ProductStockSerializer,
+                          StocksSerializer, UserTokenCreationSerializer)
 from .services import get_endpoint_data
 from orders.models import PriceList
 from warehouses.models import ProductStock
@@ -52,6 +52,25 @@ def get_token(request):
 class ProductStockViewSet(viewsets.ModelViewSet):
     queryset = ProductStock.objects.all()
     serializer_class = ProductStockSerializer
+
+
+    @action(
+        detail=False,
+        methods=('POST',),
+        url_name='check_product',
+        url_path=r'check_product',
+    )
+    @permission_classes((AllowAny, ))  # ---------------------
+    def check_product(self, request, **kwargs):
+        """Функция для проверки загруженных товаров."""
+        serializer = CheckProductsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
 
     @action(
         detail=False,

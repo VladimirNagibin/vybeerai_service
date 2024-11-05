@@ -5,7 +5,7 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework_simplejwt.tokens import AccessToken
 
 from orders.models import PayForm, PriceList
-from products.models import Product
+from products.models import Package, Pictograph,Product
 from warehouses.models import ProductStock, Warehouse
 
 User = get_user_model()
@@ -40,7 +40,7 @@ class ProductStockSerializer(serializers.ModelSerializer):
 
 
 class StocksSerializer(serializers.Serializer):
-    """Сериалайзер для загрузки остатков"""
+    """Сериалайзер для загрузки остатков."""
 
     stocks = ProductStockSerializer(many=True)
 
@@ -58,6 +58,63 @@ class StocksSerializer(serializers.Serializer):
             product_stock.save()
             result.append(product_stock)
         return {"stocks": result}
+
+
+class CheckProductSerializer(serializers.Serializer):
+    """Сериалайзер для проверки товара."""
+
+    productExternalCode = serializers.CharField()
+    productExternalName = serializers.CharField()
+    package = SlugRelatedField(
+        queryset=Package.objects.all(),
+        slug_field='packageName'
+    )
+
+    class Meta:
+        fields = ('productExternalCode', 'productExternalName', 'package')
+
+
+class CheckProductsSerializer(serializers.Serializer):
+    """Сериалайзер для проверки товаров."""
+
+    check_products = CheckProductSerializer(many=True)
+
+    class Meta:
+        fields = ('check_products',)
+
+    def create(self, validated_data):
+        result = []
+        product_active = {
+            product for product in Product.objects.filter(active=True)
+        }
+        for check_product in validated_data['check_products']:
+            product_code, product_name = (check_product['productExternalCode'],
+                                          check_product['productExternalName'])
+            current_product = Product.objects.filter(
+                productExternalCode=product_code
+            )
+            if not current_product:
+                result.append(
+                    Product(
+                        productExternalCode=product_code,
+                        productExternalName=product_name,
+                        productName=product_name,
+                        volume=0,
+                        package=check_product['package'],
+                        description='-----',
+                        pictograph=Pictograph.objects.get(pk=7),
+                        active=False,
+                    )
+                )
+            else:
+                product_active.discard(current_product[0])
+        if product_active:
+            for product in product_active:
+                product.active = False
+                product.save()
+        if result:
+            Product.objects.bulk_create(result)
+        return {"check_products": result}
 
 
 class PriceListSerializer(serializers.ModelSerializer):
