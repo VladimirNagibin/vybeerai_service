@@ -95,6 +95,7 @@ class ProductStock(models.Model):
     stock = models.FloatField(  # numeric(13, 3)
         'Остаток на складе',
         validators=[MinValueValidator(0.0)],
+        default=0,
         help_text=('Необходимость передачи нулевого значения зависит от: '
                    'processingType = 0 – можно не передавать '
                    'processingType = 1 – нужно передавать')

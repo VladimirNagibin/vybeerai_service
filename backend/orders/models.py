@@ -204,6 +204,7 @@ class PriceList(models.Model):
 
     price = models.FloatField(  # numeric(18,2)
         'цена',
+        default=0.0,
         validators=[MinValueValidator(0.0)],
     )
     vat = models.FloatField(  # numeric(5,2)

@@ -42,7 +42,7 @@ class ProductAdmin(admin.ModelAdmin):
         'package',
         'volume',
     )
-    list_editable = ('productName',)
+    list_editable = ('productName', 'active', 'volume',)
     search_fields = ('productName', 'description', 'productExternalName')
     list_filter = ('active', 'package')
 
@@ -52,7 +52,6 @@ class PackageAdmin(admin.ModelAdmin):
     list_display = ('id', 'packageName',)
     list_editable = ('packageName',)
     search_fields = ('packageName',)
-    list_filter = ('packageName',)
 
 
 @admin.register(Pictograph)
@@ -60,7 +59,6 @@ class PictographAdmin(admin.ModelAdmin):
     list_display = ('pictograph', 'pictographName',)
     list_editable = ('pictographName',)
     search_fields = ('pictographName',)
-    list_filter = ('pictographName',)
 
 
 class AttributValueInline(admin.TabularInline):

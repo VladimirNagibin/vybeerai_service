@@ -57,7 +57,7 @@ class Product(models.Model):
         unique=True,
     )
     productName = models.CharField(
-        'Наименование',
+        'Наименование в Выбирай',
         max_length=NAME_MAX_LENGHT,
         unique=True,
         help_text='Наименование для выгрузки в Выбирай',
