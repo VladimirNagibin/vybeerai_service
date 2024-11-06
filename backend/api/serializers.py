@@ -5,7 +5,7 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework_simplejwt.tokens import AccessToken
 
 from orders.models import PayForm, PriceList
-from products.models import Package, Pictograph,Product
+from products.models import Package, Pictograph, Product
 from warehouses.models import ProductStock, Warehouse
 
 User = get_user_model()
@@ -121,7 +121,7 @@ class PriceListSerializer(serializers.ModelSerializer):
     payForm = SlugRelatedField(
         queryset=PayForm.objects.all(),
         slug_field='payFormExternalCode',
-        default='1',
+        default=PayForm.objects.get(pk=1),
     )
     warehouse = SlugRelatedField(
         queryset=Warehouse.objects.all(),
@@ -152,6 +152,7 @@ class PricesSerializer(serializers.Serializer):
             price_list = PriceList.objects.get_or_create(
                 warehouse=price['warehouse'],
                 product=price['product'],
+                payForm=price['payForm'],
             )[0]
             price_list.price = price['price']
             price_list.save()
