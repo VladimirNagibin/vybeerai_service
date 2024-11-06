@@ -38,10 +38,13 @@ class ProductAdmin(admin.ModelAdmin):
         'productExternalCode',
         'productExternalName',
         'productName',
+        'active',
+        'package',
+        'volume',
     )
     list_editable = ('productName',)
-    search_fields = ('productName', 'description')
-    list_filter = ('productName',)
+    search_fields = ('productName', 'description', 'productExternalName')
+    list_filter = ('active', 'package')
 
 
 @admin.register(Package)

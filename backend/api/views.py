@@ -15,7 +15,6 @@ from warehouses.models import ProductStock
 
 
 @api_view(('POST', ))
-@permission_classes((AllowAny, ))
 def send_request(request, way):
     """Вью для отправки запроса."""
     error = ''
@@ -53,14 +52,12 @@ class ProductStockViewSet(viewsets.ModelViewSet):
     queryset = ProductStock.objects.all()
     serializer_class = ProductStockSerializer
 
-
     @action(
         detail=False,
         methods=('POST',),
         url_name='check_product',
         url_path=r'check_product',
     )
-    @permission_classes((AllowAny, ))  # ---------------------
     def check_product(self, request, **kwargs):
         """Функция для проверки загруженных товаров."""
         serializer = CheckProductsSerializer(data=request.data)
@@ -100,7 +97,7 @@ class PriceListViewSet(viewsets.ModelViewSet):
         url_path=r'prices',
     )
     def stocks(self, request, **kwargs):
-        """Функция для загрузки остатков."""
+        """Функция для загрузки цен."""
         serializer = PricesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
