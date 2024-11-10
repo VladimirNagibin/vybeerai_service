@@ -18,7 +18,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 ENDPOINTS = {
-    'productWarehouses': '/Warehouse/productWarehouses/',
+    'productWarehouses': '/Warehouse/productWarehouses',
     'loadProduct': '/Product/loadProduct/',
     'loadProductAttributs': '/Product/loadProductAttributs/',
     'productStocks': '/Warehouse/productStocks/',
