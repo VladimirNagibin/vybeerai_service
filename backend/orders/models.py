@@ -10,7 +10,8 @@ from warehouses.models import Warehouse
 
 
 class Operation(models.Model):
-    """Наличный, Безналичный, По условиям договора"""
+    """Наличный, Безналичный, По условиям договора."""
+
     operationExternalCode = models.CharField(
         'Внешний код Типа операции',
         max_length=NAME_EXT_MAX_LENGHT,

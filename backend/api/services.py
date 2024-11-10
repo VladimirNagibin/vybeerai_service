@@ -48,7 +48,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             data.append({
                 'productExternalCode': product.productExternalCode,
                 'productName': product.productName,
-                'productClassificationExternalCode': productClassificationCode,
+                'productClassificationExternalCode': f'"{productClassificationCode}"',
                 'volume': product.volume,
                 'package': product.package.packageName,
                 'packageQty': product.packageQty,
