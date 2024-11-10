@@ -48,7 +48,8 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             data.append({
                 'productExternalCode': product.productExternalCode,
                 'productName': product.productName,
-                'productClassificationExternalCode': f'{productClassificationCode}',
+                'productClassificationExternalCode':
+                f'{productClassificationCode}',
                 'volume': product.volume,
                 'package': product.package.packageName,
                 'packageQty': product.packageQty,
@@ -74,14 +75,11 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                     .attributValue
                     .attribut
                     .attributsNameSortOrder,
-                    'isFilter': product_attribut_value
-                    .attributValue
-                    .attribut
-                    .isFilter,
-                    'isCardDetailsProduct': product_attribut_value
-                    .attributValue
-                    .attribut
-                    .isCardDetailsProduct,
+                    'isFilter': (1 if product_attribut_value.
+                                 attributValue.attribut.isFilter else 0),
+                    'isCardDetailsProduct': (1 if product_attribut_value
+                                             .attributValue.attribut
+                                             .isCardDetailsProduct else 0),
                     'attributsValue': product_attribut_value
                     .attributValue
                     .attributsValue,
