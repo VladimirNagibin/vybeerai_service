@@ -5,7 +5,7 @@ import telegram
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from orders.models import (DeliveryDate, OperationOutlet, OutletPayForm,
+from orders.models import (DeliveryDate, OperationOutlet, PayForm,
                            PriceList)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
@@ -162,19 +162,15 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'payForms':
-        for pay_forms in OutletPayForm.objects.all():
+        for pay_form in PayForm.objects.all():
             data.append({
-                'payFormExternalCode': pay_forms.payForm.payFormExternalCode,
-                'payFormName': pay_forms.payForm.payFormName,
+                'payFormExternalCode': pay_form.payFormExternalCode,
+                'payFormName': pay_form.payFormName,
                 'vatCalculationMode': (1
-                                       if pay_forms.payForm.vatCalculationMode
+                                       if pay_form.vatCalculationMode
                                        else 0),
-                'customerExternalCode': pay_forms
-                .warehouse
-                .customerExternalCode,
-                'orderTypeExternalCode': pay_forms
-                .payForm
-                .orderTypeExternalCode,
+                'customerExternalCode': '1',
+                'orderTypeExternalCode': pay_form.orderTypeExternalCode,
                 'status': status,
             })
     elif way == 'priceLists':
