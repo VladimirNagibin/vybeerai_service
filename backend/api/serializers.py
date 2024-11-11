@@ -160,13 +160,16 @@ class PricesSerializer(serializers.Serializer):
         return {"prices": result}
 
     def validate(self, data):
-        prices_warehouse = []
+        #prices_warehouse = []
+        warehouse = Warehouse.objects.get(pk=1)
         for price in data['prices']:
             if 'warehouse' not in price:
-                for warehouse in Warehouse.objects.all():
-                    price_warehouse = price.copy()
-                    price_warehouse['warehouse'] = warehouse
-                    prices_warehouse.append(price_warehouse)
-            else:
-                prices_warehouse.append(price.copy())
-        return {'prices': prices_warehouse}
+                price['warehouse'] = warehouse
+                #for warehouse in Warehouse.objects.all():
+                #    price_warehouse = price.copy()
+                #    price_warehouse['warehouse'] = warehouse
+                #    prices_warehouse.append(price_warehouse)
+            #else:
+                #prices_warehouse.append(price.copy())
+        #return {'prices': prices_warehouse}
+        return data
