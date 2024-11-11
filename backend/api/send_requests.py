@@ -45,7 +45,7 @@ class SendRequest:
         response = SendRequest.send_request_post(endpoint, json.dumps(data))
         status_code = response.status_code
         if status_code == status.HTTP_200_OK:
-            token = response.json()
+            token = response.text
             cache.set('token', token, TIME_TOKEN)
             return token
         error_log = (f'Receiving token error. Status code: `{status_code}`. '
