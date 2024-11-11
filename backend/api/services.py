@@ -5,8 +5,8 @@ import telegram
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from orders.models import (DeliveryDate, OperationOutlet, PayForm,
-                           PriceList)
+from orders.models import (DeliveryDate, OperationOutlet, OutletPayForm,
+                           PayForm, PriceList)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
 
