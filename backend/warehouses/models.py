@@ -50,7 +50,7 @@ class Warehouse(models.Model):
         max_length=NAME_EXT_MAX_LENGHT,
         help_text=('Если точка синхронизации не используется, '
                    'равно warehouseExternalCode'),
-        unique=True,
+        default='1',
     )
     warehouseName = models.CharField(
         'Наименование склада',
