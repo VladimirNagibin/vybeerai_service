@@ -56,6 +56,7 @@ class Product(models.Model):
         max_length=NAME_MAX_LENGHT,
         unique=True,
     )
+    codeBitrix = models.PositiveIntegerField('Код Битрикс', default=0)
     productName = models.CharField(
         'Наименование в Выбирай',
         max_length=NAME_MAX_LENGHT,
