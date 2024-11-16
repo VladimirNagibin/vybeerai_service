@@ -115,7 +115,7 @@ class CheckProductsSerializer(serializers.Serializer):
                 product_active.discard(current_product[0])
                 cur_product.productExternalName = product_name
                 cur_product.codeBitrix = check_product['codeBitrix']
-                product_update.append()
+                product_update.append(cur_product)
         if product_active:
             for product in product_active:
                 product.active = False
