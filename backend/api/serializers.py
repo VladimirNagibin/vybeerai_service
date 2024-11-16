@@ -84,6 +84,7 @@ class CheckProductsSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         result = []
+        product_update = []
         product_active = {
             product for product in Product.objects.filter(active=True)
         }
@@ -99,6 +100,7 @@ class CheckProductsSerializer(serializers.Serializer):
                         productExternalCode=product_code,
                         productExternalName=product_name,
                         productName=product_name,
+                        codeBitrix=check_product['codeBitrix'],
                         volume=0,
                         package=check_product['package'],
                         description='-----',
@@ -107,13 +109,20 @@ class CheckProductsSerializer(serializers.Serializer):
                     )
                 )
             else:
+                cur_product = current_product[0]
                 product_active.discard(current_product[0])
+                cur_product.productExternalName = product_name
+                cur_product.codeBitrix = check_product['codeBitrix']
+                product_update.append()
         if product_active:
             for product in product_active:
                 product.active = False
                 product.save()
         if result:
             Product.objects.bulk_create(result)
+        if product_update:
+            Product.objects.bulk_update(product_update,
+                                        ['productExternalName', 'codeBitrix'])
         return {"check_products": result}
 
 
