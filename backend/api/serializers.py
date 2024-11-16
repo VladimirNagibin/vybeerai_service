@@ -69,9 +69,11 @@ class CheckProductSerializer(serializers.Serializer):
         queryset=Package.objects.all(),
         slug_field='packageName'
     )
+    codeBitrix = serializers.CharField()
 
     class Meta:
-        fields = ('productExternalCode', 'productExternalName', 'package')
+        fields = ('productExternalCode', 'productExternalName', 'package',
+                  'codeBitrix')
 
 
 class CheckProductsSerializer(serializers.Serializer):
