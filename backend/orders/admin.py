@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (Denial, Operation, Order, OrderDetail, OrderHDenial,
-                     OrderInvoice, PayForm, PriceList, SalOutDetail, SyncOrder)
+                     OrderInvoice, PayForm, PriceList, SalOutDetail)
 
 
 @admin.register(Operation)
@@ -46,9 +46,9 @@ class OrderDetailInline(admin.TabularInline):
     extra = 0
 
 
-class SyncOrderInline(admin.TabularInline):
-    model = SyncOrder
-    extra = 0
+#class SyncOrderInline(admin.TabularInline):
+#    model = SyncOrder
+#    extra = 0
 
 
 class OrderHDenialInline(admin.TabularInline):
@@ -58,10 +58,11 @@ class OrderHDenialInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    inlines = (OrderDetailInline, SyncOrderInline, OrderHDenialInline)
+    inlines = (OrderDetailInline, OrderHDenialInline)
     list_display = (
         'orderNo',
         'mainOrderNo',
+        'status',
         'warehouse',
         'payForm',
         'deliveryDate',
@@ -75,15 +76,15 @@ class OrderAdmin(admin.ModelAdmin):
     )
     # list_editable = ('price',)
     search_fields = ('orderNo', 'warehouse')
-    list_filter = ('orderNo', 'warehouse')
+    list_filter = ('status', 'orderNo', 'warehouse')
 
 
-@admin.register(SyncOrder)
-class SyncOrderAdmin(admin.ModelAdmin):
-    list_display = ('order', 'statusOrder')
-    list_editable = ('statusOrder',)
-    search_fields = ('order',)
-    list_filter = ('order',)
+#@admin.register(SyncOrder)
+#class SyncOrderAdmin(admin.ModelAdmin):
+#    list_display = ('order', 'statusOrder')
+#    list_editable = ('statusOrder',)
+#    search_fields = ('order',)
+#    list_filter = ('order',)
 
 
 @admin.register(Denial)

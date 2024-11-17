@@ -230,6 +230,12 @@ class PriceList(models.Model):
         return f'{self.product} {self.price}'
 
 
+class TypeStatusOrders(models.IntegerChoices):
+    RECEIVED = 1, 'Получен'
+    SEND_B24 = 2, 'Отправлен в Б24'
+    CONFIRMED = 3, 'Подтвержден в Выбирай'
+    SHIPPED = 4, 'Отгружен'
+
 class Order(models.Model):
     orderNo = models.CharField(
         'Код заказа',
@@ -241,7 +247,7 @@ class Order(models.Model):
                    'несколько заказов. Если один заказ, сделанный на портале, '
                    'разделился на несколько.)')
     )
-    warehouse = models.OneToOneField(
+    warehouse = models.ForeignKey(
         Warehouse,
         on_delete=models.CASCADE,
         verbose_name='склад',
@@ -257,7 +263,7 @@ class Order(models.Model):
         null=True,
         blank=True,
     )
-    deliveryDate = models.DateField('Дата доставки заказа')
+    deliveryDate = models.DateTimeField('Дата доставки заказа')
     totalSum = models.FloatField(  # numeric(18,5)
         'Общая сумма заказа',
         validators=[MinValueValidator(0.0)],
@@ -286,8 +292,17 @@ class Order(models.Model):
         'комментарий',
         max_length=COMMENT_MAX_LENGHT,
     )
-    isReturn = models.SmallIntegerField('Признак накладной по возврату тары')
-    oLCardType = models.SmallIntegerField('где создан заказ')
+    status = models.PositiveSmallIntegerField(
+        'Статус',
+        choices=TypeStatusOrders.choices,
+        default=TypeStatusOrders.RECEIVED,
+    )
+    code_B24 = models.PositiveSmallIntegerField('Код Битрикс', unique=True,
+                                                null=True, default=None)
+    isReturn = models.BooleanField('Признак накладной по возврату тары',
+                                   default=False)
+    #models.SmallIntegerField('Признак накладной по возврату тары')
+    olCardType = models.SmallIntegerField('где создан заказ')
     #  4 – браузер. 44 – приложение.
 
     # outletData # Содержит информацию о потенциальном поставщике.
@@ -362,26 +377,26 @@ class OrderDetail(models.Model):
         return f'{self.order} {self.product} {self.qty}'
 
 
-class SyncOrder(models.Model):
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name='Заказ',
-        related_name='syncorders',
-    )
-    statusOrder = models.PositiveSmallIntegerField(
-        'Статус состояния заказа',
-        help_text=('1 - новый, 2 - выгружен в Б24, 3 - информация о приёме '
-                   'отправлена в портал'),
-    )
+#class SyncOrder(models.Model):
+#    order = models.OneToOneField(
+#        Order,
+#        on_delete=models.CASCADE,
+#        verbose_name='Заказ',
+#        related_name='syncorders',
+#    )
+#    statusOrder = models.PositiveSmallIntegerField(
+#        'Статус состояния заказа',
+#        help_text=('1 - новый, 2 - выгружен в Б24, 3 - информация о приёме '
+#                   'отправлена в портал'),
+#    )
+#
+#    class Meta:
+#        ordering = ('order',)
+#        verbose_name = 'статус заказа'
+#        verbose_name_plural = 'Статус заказов'
 
-    class Meta:
-        ordering = ('order',)
-        verbose_name = 'статус заказа'
-        verbose_name_plural = 'Статус заказов'
-
-    def __str__(self):
-        return f'{self.order} {self.statusOrder}'
+#    def __str__(self):
+#        return f'{self.order} {self.statusOrder}'
 
 
 class Denial(models.Model):
@@ -421,11 +436,11 @@ class OrderHDenial(models.Model):
         verbose_name='причина отказа',
         related_name='orders_denial',
     )
-    statusOrderDenial = models.PositiveSmallIntegerField(
-        'Статус состояния отправки причины неудачи',
-        help_text=('1 - новый, 2 - выгружен в портал'),
-        default=1
-    )
+    #statusOrderDenial = models.PositiveSmallIntegerField(
+    #    'Статус состояния отправки причины неудачи',
+    #    help_text=('1 - новый, 2 - выгружен в портал'),
+    #    default=1
+    #)
 
     class Meta:
         ordering = ('order',)

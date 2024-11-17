@@ -1,21 +1,22 @@
 import logging
 import os
 
-import telegram
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from orders.models import (DeliveryDate, OperationOutlet, OutletPayForm,
-                           PayForm, PriceList)
+from .serializers import OrderDetailSerializer, OrderSerializer
+from orders.models import (DeliveryDate, OperationOutlet, Order, OrderDetail,
+                           OutletPayForm, PayForm, PriceList, TypeStatusOrders)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
 
-STATUS_CHANGE_OR_UPDATE = 2
-
 load_dotenv()
 
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+SUPPLIER_ID = os.getenv('SUPPLIER_ID')
+
+
+STATUS_CHANGE_OR_UPDATE = 2
+
 
 ENDPOINTS = {
     'productWarehouses': '/Warehouse/productWarehouses',
@@ -28,6 +29,8 @@ ENDPOINTS = {
     'payForms': '/PayForm/payForms/',
     'outletPayForms': '/PayForm/outletPayForms/',
     'priceLists': '/PayForm/priceLists/',
+    'orders': f'/SyncOrder/orders/{SUPPLIER_ID}',
+    'syncOrders': '/syncOrder/syncOrders',
 }
 
 
@@ -186,6 +189,12 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'vat': price_list.vat,
                 'status': status,
             })
+    elif way == 'orders':
+        return data
+    elif way == 'syncOrders':
+        orders = Order.objects.filter(status=TypeStatusOrders.SEND_B24)
+        for order in orders:
+            data.append({'orderNo': order.orderNo})
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')
@@ -202,22 +211,30 @@ def get_endpoint_data(way, status=STATUS_CHANGE_OR_UPDATE):
     return endpoint_data
 
 
-class SendMessage:
-    """Class for send message."""
-
-    logger = logging.getLogger(__name__)
-
-    @staticmethod
-    def send_message(message):
-        """Send message in Telegram."""
-        SendMessage.logger.debug(f'Bot start send message: `{message}`')
-        bot = telegram.Bot(token=TELEGRAM_TOKEN)
-        try:
-            bot.send_message(TELEGRAM_CHAT_ID, message)
-        except telegram.error.TelegramError as error:
-            SendMessage.logger.exception(
-                f'Error send message `{message}` in Telegram: {error}'
+def create_orders(data):
+    orders = data['orders']
+    for order in orders:
+        order_no = order['orderNo']
+        order_doc = Order.objects.filter(orderNo=order_no)
+        if order_doc:
+            ser_order = OrderSerializer(order_doc[0], data=order)
+        else:
+            ser_order = OrderSerializer(data=order)
+        ser_order.is_valid(raise_exception=True)
+        ser_order.save()
+        products = order['details']
+        for product in products:
+            print(product)
+            order_no = product['orderNo']
+            product_no = product['productExternalCode']
+            product_doc = OrderDetail.objects.filter(
+                order=Order.objects.get(orderNo=order_no),
+                product=Product.objects.get(productExternalCode=product_no)
             )
-            return False
-        SendMessage.logger.debug(f'Bot send message: `{message}`')
-        return True
+            if product_doc:
+                ser_product = OrderDetailSerializer(product_doc[0],
+                                                    data=product)
+            else:
+                ser_product = OrderDetailSerializer(data=product)
+            ser_product.is_valid(raise_exception=True)
+            ser_product.save()

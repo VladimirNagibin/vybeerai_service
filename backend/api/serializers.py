@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework_simplejwt.tokens import AccessToken
 
-from orders.models import PayForm, PriceList
+from orders.models import Operation, Order, OrderDetail, PayForm, PriceList
 from products.models import Package, Pictograph, Product
 from warehouses.models import ProductStock, Warehouse
 
@@ -184,3 +184,63 @@ class PricesSerializer(serializers.Serializer):
                 #prices_warehouse.append(price.copy())
         #return {'prices': prices_warehouse}
         return data
+
+
+class OrderSerializer(serializers.ModelSerializer):
+
+    warehouseExternalCode = serializers.SlugRelatedField(
+        queryset=Warehouse.objects.all(),
+        slug_field='warehouseExternalCode',
+        source='warehouse'
+    )
+    payFormExternalCode = serializers.SlugRelatedField(
+        queryset=PayForm.objects.all(),
+        slug_field='payFormExternalCode',
+        source='payForm'
+    )
+    operationExternalCode = serializers.SlugRelatedField(
+        queryset=Operation.objects.all(),
+        slug_field='operationExternalCode',
+        source='operation'
+    )
+    creationDate = serializers.CharField()
+    deliveryDate = serializers.CharField()
+
+    class Meta:
+        model = Order
+        fields = ('orderNo', 'mainOrderNo', 'warehouseExternalCode',
+                  'payFormExternalCode', 'orderTypeExternalCode',
+                  'deliveryDate', 'totalSum', 'vatSum', 'discount',
+                  'creationDate', 'operationExternalCode', 'deliveryAddress',
+                  'comment', 'isReturn', 'olCardType')
+
+    @staticmethod
+    def update_format_date(value):
+        value_tmp = value.split()
+        date_tmp = value_tmp[0].split('.')
+        return f'{date_tmp[2]}-{date_tmp[1]}-{date_tmp[0]}T{value_tmp[1]}'
+
+    def validate_creationDate(self, value):
+        return self.update_format_date(value)
+
+    def validate_deliveryDate(self, value):
+        return self.update_format_date(value)
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+
+    orderNo = serializers.SlugRelatedField(
+        queryset=Order.objects.all(),
+        slug_field='orderNo',
+        source='order'
+    )
+    productExternalCode = serializers.SlugRelatedField(
+        queryset=Product.objects.all(),
+        slug_field='productExternalCode',
+        source='product'
+    )
+
+    class Meta:
+        model = OrderDetail
+        fields = ('orderNo', 'productExternalCode', 'price', 'basePrice',
+                  'qty', 'vat', 'discount')
