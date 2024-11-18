@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='order',
             name='isReturn',
-            field=models.BooleanField(default=False, verbose_name='Признак накладной по возврату тары'),
+            #field=models.BooleanField(default=False, verbose_name='Признак накладной по возврату тары'),
+            field=models.SmallIntegerField(verbose_name='Признак накладной по возврату тары'),
         ),
     ]
