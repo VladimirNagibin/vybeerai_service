@@ -301,7 +301,7 @@ class Order(models.Model):
                                                 null=True, default=None)
     isReturn = models.BooleanField('Признак накладной по возврату тары',
                                    default=False)
-    #  models.SmallIntegerField('Признак накладной по возврату тары')
+    #isReturn = models.SmallIntegerField('Признак накладной по возврату тары')
     olCardType = models.SmallIntegerField('где создан заказ')
     #  4 – браузер. 44 – приложение.
 
