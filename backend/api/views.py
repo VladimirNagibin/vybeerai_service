@@ -32,7 +32,7 @@ def send_request(request, way):
             if response['countOrder'] > 0:
                 create_orders(response)
         elif way == 'send_orders_b24':
-            SendRequest.send_orders_b24()
+            response = SendRequest.send_orders_b24()
         else:
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange
