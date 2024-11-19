@@ -13,7 +13,8 @@ class Package(models.Model):
         max_length=PACK_MAX_LENGHT,
         help_text='Тип единицы измерения(например: бутылка или банка или кег)',
     )
-
+    package_code = models.PositiveSmallIntegerField('Код единицы измерения',
+                                                    default=0)
     class Meta:
         ordering = ('packageName',)
         verbose_name = 'тип единицы измерения'

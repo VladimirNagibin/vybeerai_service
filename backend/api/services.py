@@ -30,7 +30,7 @@ ENDPOINTS = {
     'outletPayForms': '/PayForm/outletPayForms/',
     'priceLists': '/PayForm/priceLists/',
     'orders': f'/SyncOrder/orders/{SUPPLIER_ID}',
-    'syncOrders': '/syncOrder/syncOrders',
+    'syncOrders': '/SyncOrder/syncOrders',
 }
 
 
@@ -224,7 +224,6 @@ def create_orders(data):
         ser_order.save()
         products = order['details']
         for product in products:
-            print(product)
             order_no = product['orderNo']
             product_no = product['productExternalCode']
             product_doc = OrderDetail.objects.filter(

@@ -50,8 +50,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'packageName',)
-    list_editable = ('packageName',)
+    list_display = ('id', 'packageName', 'package_code')
+    list_editable = ('packageName', 'package_code')
     search_fields = ('packageName',)
 
 

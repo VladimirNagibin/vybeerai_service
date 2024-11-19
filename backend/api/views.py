@@ -27,120 +27,12 @@ def send_request(request, way):
         return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
     try:
         if way == 'orders':
-            #response = SendRequest.send_request_token(endpoint, data,
-            #                                          http_method='get')
-            response = {
-                "result": "",
-                "countOrder": 3,
-                "orders": [
-                    {
-                        "orderNo": "1",
-                        "mainOrderNo": "1",
-                        "outletExternalCode": "TT000000004",
-                        "customerExternalCode": "1",
-                        "payFormExternalCode": "000000039",
-                        "orderTypeExternalCode": "1",
-                        "deliveryDate": "13.11.2024 00:00:00",
-                        "totalSum": 2400.00000,
-                        "vatSum": 0.00000,
-                        "discount": 0.00,
-                        "creationDate": "12.11.2024 10:32:51",
-                        "operationExternalCode": "2",
-                        "warehouseExternalCode": "000000004",
-                        "deliveryAddress": "г. Санкт-Петербург, ул. Якорная, 7 А",
-                        "comment": "ТЕСТ",
-                        "isReturn": False,
-                        "olCardType": 4,
-                        "outletData": None,
-                        "details": [
-                            {
-                                "orderNo": "1",
-                                "productExternalCode": "El000000507",
-                                "price": 2400.00000,
-                                "basePrice": 2400.00000,
-                                "qty": 1.00,
-                                "vat": 0.00,
-                                "discount": 0.00,
-                                "isReturnable": 0,
-                                "orderDPromo": []
-                            }
-                        ],
-                        "orderHPromo": []
-                    },
-                    {
-                        "orderNo": "2",
-                        "mainOrderNo": "2",
-                        "outletExternalCode": "TT000000004",
-                        "customerExternalCode": "1",
-                        "payFormExternalCode": "000000039",
-                        "orderTypeExternalCode": "1",
-                        "deliveryDate": "13.11.2024 00:00:00",
-                        "totalSum": 3300.00000,
-                        "vatSum": 0.00000,
-                        "discount": 0.00,
-                        "creationDate": "12.11.2024 10:34:09",
-                        "operationExternalCode": "1",
-                        "warehouseExternalCode": "000000004",
-                        "deliveryAddress": "г. Санкт-Петербург, ул. Якорная, 7 А",
-                        "comment": "ТЕСТ",
-                        "isReturn": False,
-                        "olCardType": 4,
-                        "outletData": None,
-                        "details": [
-                            {
-                                "orderNo": "2",
-                                "productExternalCode": "00000002033",
-                                "price": 3300.00000,
-                                "basePrice": 3300.00000,
-                                "qty": 1.00,
-                                "vat": 0.00,
-                                "discount": 0.00,
-                                "isReturnable": 0,
-                                "orderDPromo": []
-                            }
-                        ],
-                        "orderHPromo": []
-                    },
-                    {
-                        "orderNo": "3",
-                        "mainOrderNo": "3",
-                        "outletExternalCode": "TT000000004",
-                        "customerExternalCode": "1",
-                        "payFormExternalCode": "000000039",
-                        "orderTypeExternalCode": "1",
-                        "deliveryDate": "13.11.2024 00:00:00",
-                        "totalSum": 2900.00000,
-                        "vatSum": 0.00000,
-                        "discount": 0.00,
-                        "creationDate": "12.11.2024 10:35:26",
-                        "operationExternalCode": "3",
-                        "warehouseExternalCode": "000000004",
-                        "deliveryAddress": "г. Санкт-Петербург, ул. Якорная, 7 А",
-                        "comment": "ТЕСТ ",
-                        "isReturn": False,
-                        "olCardType": 4,
-                        "outletData": None,
-                        "details": [
-                            {
-                                "orderNo": "3",
-                                "productExternalCode": "El000001296",
-                                "price": 2900.00000,
-                                "basePrice": 2900.00000,
-                                "qty": 1.00,
-                                "vat": 0.00,
-                                "discount": 0.00,
-                                "isReturnable": 0,
-                                "orderDPromo": []
-                            }
-                        ],
-                        "orderHPromo": []
-                    },
-                ]
-            }
-
-            #create_orders(response)
-            #SendRequest.send_orders_b24()
-            send_request(request, 'syncOrders')
+            response = SendRequest.send_request_token(endpoint, data,
+                                                      http_method='get')
+            if response['countOrder'] > 0:
+                create_orders(response)
+        elif way == 'send_orders_b24':
+            SendRequest.send_orders_b24()
         else:
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange

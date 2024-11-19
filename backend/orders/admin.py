@@ -74,7 +74,7 @@ class OrderAdmin(admin.ModelAdmin):
         'deliveryAddress',
         'comment',
     )
-    # list_editable = ('price',)
+    list_editable = ('status',)
     search_fields = ('orderNo', 'warehouse')
     list_filter = ('status', 'orderNo', 'warehouse')
 
