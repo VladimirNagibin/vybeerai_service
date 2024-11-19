@@ -31,6 +31,7 @@ ENDPOINTS = {
     'priceLists': '/PayForm/priceLists/',
     'orders': f'/SyncOrder/orders/{SUPPLIER_ID}',
     'syncOrders': '/SyncOrder/syncOrders',
+    'send_orders_b24': '/send_orders_b24',
 }
 
 
@@ -190,6 +191,8 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'orders':
+        return data
+    elif way == 'send_orders_b24':
         return data
     elif way == 'syncOrders':
         orders = Order.objects.filter(status=TypeStatusOrders.SEND_B24)
