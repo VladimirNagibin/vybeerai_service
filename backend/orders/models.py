@@ -297,8 +297,8 @@ class Order(models.Model):
         choices=TypeStatusOrders.choices,
         default=TypeStatusOrders.RECEIVED,
     )
-    code_B24 = models.PositiveSmallIntegerField('Код Битрикс', unique=True,
-                                                null=True, default=None)
+    code_B24 = models.PositiveIntegerField('Код Битрикс', unique=True,
+                                           null=True, default=None)
     isReturn = models.BooleanField('Признак накладной по возврату тары',
                                    default=False)
     #isReturn = models.SmallIntegerField('Признак накладной по возврату тары')
