@@ -115,6 +115,11 @@ class SendRequest:
         except Exception:
             r_text = response.text
         if status_code == status.HTTP_200_OK:
+            if endpoint == '/SyncOrder/syncOrders':
+                for order_no in data:
+                    order = Order.objects.get(orderNo=order_no)
+                    order.status = TypeStatusOrders.CONFIRMED
+                    order.save()
             return r_text
         error_log = (f'Error send request. Status code: `{status_code}`. '
                      f'{r_text}')
@@ -215,4 +220,4 @@ class SendRequest:
             else:
                 ...
                 #  Code B24 exist, but status not sender
-        return 'Orders load'
+        return 'Orders load'  # Add info about orders
