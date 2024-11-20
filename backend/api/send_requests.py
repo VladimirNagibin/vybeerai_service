@@ -117,7 +117,7 @@ class SendRequest:
         if status_code == status.HTTP_200_OK:
             if endpoint == '/SyncOrder/syncOrders':
                 for order_no in data:
-                    order = Order.objects.get(orderNo=order_no)
+                    order = Order.objects.get(orderNo=order_no['orderNo'])
                     order.status = TypeStatusOrders.CONFIRMED
                     order.save()
             return r_text
