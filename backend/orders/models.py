@@ -235,6 +235,7 @@ class TypeStatusOrders(models.IntegerChoices):
     SEND_B24 = 2, 'Отправлен в Б24'
     CONFIRMED = 3, 'Подтвержден в Выбирай'
     SHIPPED = 4, 'Отгружен'
+    SHIPPED_VYBEERAI = 5, 'Отгружен в Выбирай'
 
 class Order(models.Model):
     orderNo = models.CharField(
@@ -320,6 +321,69 @@ class Order(models.Model):
     def __str__(self):
         return (f'Заказ: {self.orderNo} склад:{self.warehouse} '
                 f'{self.comment[:PRESENTATION_MAX_LENGTH]}')
+
+
+class Company(models.Model):
+    inn = models.CharField(
+        'ИНН',
+        max_length=NAME_EXT_MAX_LENGHT,
+        unique=True,
+    )
+    legalName = models.CharField(
+        'Юридическое название',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+    code_B24 = models.PositiveIntegerField('Код Битрикс', unique=True,
+                                           null=True, default=None)
+
+    class Meta:
+        ordering = ('inn',)
+        verbose_name = 'компания'
+        verbose_name_plural = 'Компании'
+
+    def __str__(self):
+        return self.legalName
+
+
+class OutletData(models.Model):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='Заказ',
+    )
+    tempOutletCode = models.CharField(
+        'Временный внешний код ТТ',
+        max_length=NAME_EXT_MAX_LENGHT,
+        unique=True,
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        verbose_name='Компания',
+    )
+    deliveryAddress = models.CharField(
+        'Адрес доставки',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+    phone = models.CharField(
+        'Телефон',
+        max_length=NAME_EXT_MAX_LENGHT,
+    )
+    contactPerson = models.CharField(
+        'Контактное лицо',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ('tempOutletCode',)
+        verbose_name = 'компания в заказе'
+        verbose_name_plural = 'Компания в заказах'
+
+    def __str__(self):
+        return self.company.legalName
 
 
 class OrderDetail(models.Model):

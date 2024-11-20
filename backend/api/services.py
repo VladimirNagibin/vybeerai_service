@@ -4,9 +4,11 @@ import os
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from .serializers import OrderDetailSerializer, OrderSerializer
-from orders.models import (DeliveryDate, OperationOutlet, Order, OrderDetail,
-                           OutletPayForm, PayForm, PriceList, TypeStatusOrders)
+from .serializers import (CompanySerializer, OrderDetailSerializer,
+                          OrderSerializer, OutletDataSerializer)
+from orders.models import (Company, DeliveryDate, OperationOutlet, Order,
+                           OrderDetail, OutletData, OutletPayForm, PayForm,
+                           PriceList, TypeStatusOrders)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
 
@@ -224,7 +226,7 @@ def create_orders(data):
         else:
             ser_order = OrderSerializer(data=order)
         ser_order.is_valid(raise_exception=True)
-        ser_order.save()
+        order_instance = ser_order.save()
         products = order['details']
         for product in products:
             order_no = product['orderNo']
@@ -240,3 +242,39 @@ def create_orders(data):
                 ser_product = OrderDetailSerializer(data=product)
             ser_product.is_valid(raise_exception=True)
             ser_product.save()
+        outlet_data = order.get('outletData')
+        if outlet_data:
+            order_no = outlet_data['orderNo']
+            temp_outlet_code = outlet_data['tempOutletCode']
+            inn = outlet_data['inn']
+            legal_name = outlet_data.get('legalName')
+            delivery_address = outlet_data.get('deliveryAddress')
+            phone = outlet_data['phone']
+            contact_person = outlet_data.get('contactPerson')
+            company_doc = Company.objects.filter(inn=inn)
+            data_company = {'inn': inn,
+                            'legalName': legal_name if legal_name else ''}
+            print(data_company)
+            if company_doc:
+                ser_company = CompanySerializer(company_doc[0],
+                                                data=data_company)
+            else:
+                ser_company = CompanySerializer(data=data_company)
+            ser_company.is_valid(raise_exception=True)
+            company = ser_company.save()
+            outlet_data_doc = OutletData.objects.filter(order=order_instance)
+            data_outlet_data = {'orderNo': order_no,
+                                'tempOutletCode': temp_outlet_code,
+                                'company': company.pk,
+                                'deliveryAddress':
+                                delivery_address if delivery_address else '',
+                                'phone': phone,
+                                'contactPerson':
+                                contact_person if contact_person else ''}
+            if outlet_data_doc:
+                ser_outlet_data = OutletDataSerializer(outlet_data_doc[0],
+                                                       data=data_outlet_data)
+            else:
+                ser_outlet_data = OutletDataSerializer(data=data_outlet_data)
+            ser_outlet_data.is_valid(raise_exception=True)
+            ser_outlet_data.save()
