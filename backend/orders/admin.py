@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import (Company, Denial, Operation, Order, OrderDetail,
-                     OrderHDenial, OrderInvoice, OutletData, PayForm,
-                     PriceList, SalOutDetail)
+from .models import (Company, Denial, Operation, OperationOutlet, Order,
+                     OrderDetail, OrderHDenial, OrderInvoice, OutletData,
+                     PayForm, PriceList, SalOutDetail)
 
 
 @admin.register(Operation)
@@ -121,3 +121,11 @@ class OrderInvoiceAdmin(admin.ModelAdmin):
     # list_editable = ('price',)
     search_fields = ('invoiceNo', 'warehouse')
     list_filter = ('invoiceNo', 'warehouse')
+
+
+@admin.register(OperationOutlet)
+class OperationOutletAdmin(admin.ModelAdmin):
+    list_display = ('operation', 'warehouse')
+    #list_editable = ('denial',)
+    #search_fields = ('denial',)
+    #list_filter = ('denial',)
