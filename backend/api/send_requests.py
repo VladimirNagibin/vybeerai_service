@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 import json
+import sys
 
 from django.core.cache import cache
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ from rest_framework import status
 
 from .exceptions import SendRequestException, TokenReceivingException
 from .send_message import SendMessage
-from orders.models import Order, OrderDetail, TypeStatusOrders
+from orders.models import Order, OrderDetail, OutletData, TypeStatusOrders
 
 load_dotenv()
 
@@ -128,10 +129,66 @@ class SendRequest:
         raise SendRequestException(f'Error send request {status_code}')
 
     @staticmethod
+    def check_company(inn, legal_name, code_B24, delivery_address,
+                      contact_person, phone):
+        endpoint_inn = (f'/crm.requisite.list?filter[RQ_INN]={inn}'
+                                    '&select[0]=ENTITY_TYPE_ID'
+                                    '&select[1]=ENTITY_ID')
+                    customers_by_inn = SendRequest.send_request_method(
+                        endpoint_inn, {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                        headers={},
+                        http_method='get',
+                    )
+                    status_code_inn = customers_by_inn.status_code
+                    if status_code_inn == status.HTTP_200_OK:
+                        result = (customers_by_inn.json().get('result'))
+                        if result:
+                            if len(result) == 1:
+                                code_B24_B24 = result[0]['ENTITY_ID']
+                                print(code_B24_B24)
+                                #sys.exit()
+                            else:
+                                comments = ('В Битриксе существует больше '
+                                            f'одной компании с ИНН {inn}. '
+                                            'Выберите подходящую вручную.')
+                                + comments
+                                code_B24 = 0
+                        else:
+                            ...  # inn not found
+                    else:
+                        ...  # request fail
+                    if code_B24:
+                        ...  # check
+        return None
+
+    @staticmethod
     def send_orders_b24():
         orders = Order.objects.filter(status=TypeStatusOrders.RECEIVED)
         for order in orders:
             if order.code_B24 is None or order.code_B24 == 0:
+                customers = OutletData.objects.filter(order=order)
+                if customers:
+                    customer = customers[0]
+                    code_B24 = customer.company.code_B24
+                    delivery_address = customer.deliveryAddress
+                    contact_person = customer.contactPerson
+                    phone = customer.phone
+                    comments = (f'Расчет: {order.operation.operationName}\n'
+                                f'Телефон: {phone}\n'
+                                f'Дата заказа: {str(order.creationDate)}\n'
+                                f'Дата доставки: {str(order.deliveryDate)}\n')
+                    comments += (f'Адрес доставки: {delivery_address}\n'
+                                 if delivery_address else '')
+                    comments += (f'Контактное лицо: {contact_person}\n'
+                                 if contact_person else '')
+                    comments += f'{order.comment}'
+                    inn = customer.company.inn
+                    legal_name = customer.company.legalName
+                    phone = customer.phone
+                    code_B24 = SendRequest.check_company(
+                        inn, legal_name, code_B24, delivery_address,
+                        contact_person, phone
+                    )
                 rq_text = (f'fields[TITLE]=Выбирай заказ №{order.orderNo}'
                            f'&fields[TYPE_ID]={TYPE_VYBEERAI}'
                            '&fields[CATEGORY_ID]=0'
@@ -141,15 +198,12 @@ class SendRequest:
                            f'{WAREHOUSES_B24.get(order.warehouse.pk)}'
                            '&fields[TAX_VALUE]=0.0'
                            f'&fields[UF_CRM_1650617036]={SHIPPING_COMPANY}'
-                           f'&fields[COMMENTS]='
-                           f'Расчет: {order.operation.operationName}\n'
-                           f'Дата заказа: {str(order.creationDate)}\n'
-                           f'Дата доставки: {str(order.deliveryDate)}\n'
-                           f'{order.comment}')
+                           f'&fields[COMMENTS]={comments}')
+                if code_B24:
+                    rq_text += f'&fields[COMPANY_ID]={code_B24}'
                 # f'&fields[BEGINDATE]={str(.creationDate).replace(" ", "T")}'
                 # f'&fields[CLOSEDATE]={str(.deliveryDate).replace(" ", "T")}'
                 #  '&fields[COMPANY_ID]=0&fields[CONTACT_ID]=0'
-                print(rq_text)
                 response = SendRequest.send_request_method(
                     f'{ENDPOINT_SEND_ORDER}?{rq_text}',
                     {}, portal=f'{PORTAL_B24}{TOKEN_B24}',

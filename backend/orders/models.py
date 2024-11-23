@@ -237,6 +237,7 @@ class TypeStatusOrders(models.IntegerChoices):
     SHIPPED = 4, 'Отгружен'
     SHIPPED_VYBEERAI = 5, 'Отгружен в Выбирай'
 
+
 class Order(models.Model):
     orderNo = models.CharField(
         'Код заказа',
