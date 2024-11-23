@@ -8,7 +8,8 @@ from django.core.cache import cache
 from dotenv import load_dotenv
 from rest_framework import status
 
-from .exceptions import SendRequestException, TokenReceivingException
+from .exceptions import (RequestB24Exception, SendRequestException,
+                         TokenReceivingException)
 from .send_message import SendMessage
 from orders.models import Order, OrderDetail, OutletData, TypeStatusOrders
 
@@ -31,6 +32,8 @@ TYPE_VYBEERAI = 1  # Add type marketplace
 ENDPOINT_SEND_ORDER = 'crm.deal.add'
 ENDPOINT_SEND_ORDER_PRODUCT = 'crm.deal.productrows.set'
 ENDPOINT_DEL_ORDER = 'crm.deal.delete'
+ENDPOINT_ADD_CONPANY = 'crm.company.add'
+ENDPOINT_ADD_CONPANY_REQUIS = 'crm.requisite.add'
 WAREHOUSES_B24 = {1: 597, 2: 599, 3: 601, 4: 603}  # 1-Nsk, 2-Spb, 3-Kdr, 4-Msk
 
 
@@ -129,37 +132,77 @@ class SendRequest:
         raise SendRequestException(f'Error send request {status_code}')
 
     @staticmethod
+    def check_company_field(code_B24, delivery_address, contact_person, phone):
+        ...
+
+    @staticmethod
     def check_company(inn, legal_name, code_B24, delivery_address,
                       contact_person, phone):
         endpoint_inn = (f'/crm.requisite.list?filter[RQ_INN]={inn}'
-                                    '&select[0]=ENTITY_TYPE_ID'
-                                    '&select[1]=ENTITY_ID')
-                    customers_by_inn = SendRequest.send_request_method(
-                        endpoint_inn, {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
-                        headers={},
-                        http_method='get',
-                    )
-                    status_code_inn = customers_by_inn.status_code
-                    if status_code_inn == status.HTTP_200_OK:
-                        result = (customers_by_inn.json().get('result'))
-                        if result:
-                            if len(result) == 1:
-                                code_B24_B24 = result[0]['ENTITY_ID']
-                                print(code_B24_B24)
-                                #sys.exit()
-                            else:
-                                comments = ('В Битриксе существует больше '
-                                            f'одной компании с ИНН {inn}. '
-                                            'Выберите подходящую вручную.')
-                                + comments
-                                code_B24 = 0
-                        else:
-                            ...  # inn not found
+                        '&select[0]=ENTITY_TYPE_ID&select[1]=ENTITY_ID')
+        customers_by_inn = SendRequest.send_request_method(
+            endpoint_inn, {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+            headers={},
+            http_method='get',
+        )
+        status_code_inn = customers_by_inn.status_code
+        if status_code_inn == status.HTTP_200_OK:
+            result = (customers_by_inn.json().get('result'))
+            if result:
+                inns = [res['ENTITY_ID'] for res in result]
+                if code_B24:
+                    if code_B24 in inns:
+                        SendRequest.check_company_field(
+                            code_B24, delivery_address, contact_person, phone
+                        )
+                        return code_B24
+                    return 0
+                else:
+                    if len(result) == 1:
+                        code_B24_B24 = result[0]['ENTITY_ID']
+                        SendRequest.check_company_field(
+                            code_B24_B24, delivery_address, contact_person,
+                            phone
+                        )
+                        return code_B24_B24
+                    elif len(result) > 1:
+                        return None
                     else:
-                        ...  # request fail
-                    if code_B24:
-                        ...  # check
-        return None
+                        rq_text = (f'fields[ASSIGNED_BY_ID]={USER_B24}'
+                                   f'&fields[TITLE]={legal_name}')
+                        response = SendRequest.send_request_method(
+                            f'{ENDPOINT_ADD_CONPANY}?{rq_text}',
+                            {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                            headers={},
+                            http_method='get',
+                        )
+                        status_code = response.status_code
+                        if status_code == status.HTTP_200_OK:
+                            company_code_B24 = response.json()['result']
+                            rq_req_text = (
+                                f'fields[ENTITY_TYPE_ID]=4'
+                                f'&fields[ENTITY_ID]={company_code_B24}'
+                                f'&fields[NAME]=Реквизиты {legal_name}'
+                                '&fields[RQ_INN]={inn}'
+                            )
+                            if int(inn) > 10000000000:  # ind businessman
+                                rq_req_text += '&fields[PRESET_ID]=3'
+                            else:  # juridical person
+                                rq_req_text += '&fields[PRESET_ID]=1'
+                            response = SendRequest.send_request_method(
+                                f'{ENDPOINT_ADD_CONPANY_REQUIS}?{rq_req_text}',
+                                {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                                headers={},
+                                http_method='get',
+                            )
+                            SendRequest.check_company_field(
+                                company_code_B24, delivery_address,
+                                contact_person, phone
+                            )
+                            return company_code_B24
+                        raise RequestB24Exception('bad request B24 add company')
+            raise RequestB24Exception('bad request B24 get company by inn')
+        raise RequestB24Exception('bad request B24 get company by inn')
 
     @staticmethod
     def send_orders_b24():
@@ -185,10 +228,20 @@ class SendRequest:
                     inn = customer.company.inn
                     legal_name = customer.company.legalName
                     phone = customer.phone
-                    code_B24 = SendRequest.check_company(
+                    code_B24_B24 = SendRequest.check_company(
                         inn, legal_name, code_B24, delivery_address,
                         contact_person, phone
                     )
+                    if code_B24_B24 is None:
+                        comments = ('В Битриксе существует больше '
+                                    f'одной компании с ИНН {inn}. '
+                                    'Выберите подходящую вручную.')
+                        + comments
+                    elif code_B24_B24 == 0:
+                        comments = (f'У компании прописан код Б24 {code_B24}, '
+                                    f'но ИНН {inn} не совпадает. '
+                                    'Выберите компанию вручную.')
+                        + comments
                 rq_text = (f'fields[TITLE]=Выбирай заказ №{order.orderNo}'
                            f'&fields[TYPE_ID]={TYPE_VYBEERAI}'
                            '&fields[CATEGORY_ID]=0'
@@ -199,8 +252,8 @@ class SendRequest:
                            '&fields[TAX_VALUE]=0.0'
                            f'&fields[UF_CRM_1650617036]={SHIPPING_COMPANY}'
                            f'&fields[COMMENTS]={comments}')
-                if code_B24:
-                    rq_text += f'&fields[COMPANY_ID]={code_B24}'
+                if code_B24_B24:
+                    rq_text += f'&fields[COMPANY_ID]={code_B24_B24}'
                 # f'&fields[BEGINDATE]={str(.creationDate).replace(" ", "T")}'
                 # f'&fields[CLOSEDATE]={str(.deliveryDate).replace(" ", "T")}'
                 #  '&fields[COMPANY_ID]=0&fields[CONTACT_ID]=0'

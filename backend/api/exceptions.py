@@ -20,3 +20,9 @@ class NotFoundDataException(Exception):
     """Error load data."""
 
     ...
+
+
+class RequestB24Exception(Exception):
+    """Error get data B24."""
+
+    ...
