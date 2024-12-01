@@ -141,19 +141,20 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             })
     elif way == 'deliveryDates':
         for delivery_date in DeliveryDate.objects.all():
-            data.append({
-                'outletExternalCode': delivery_date
-                .warehouse
-                .outlet
-                .outletExternalCode,
-                'customerExternalCode': delivery_date
-                .warehouse
-                .customerExternalCode,
-                'deliveryDate': delivery_date.deliveryDate,
-                'deadLine': delivery_date.deadLine,
-                'minSum': delivery_date.minSum,
-                'status': status,
-            })
+            for deliv_date in delivery_date.deliveryDate.split(', '):
+                data.append({
+                    'outletExternalCode': delivery_date
+                    .warehouse
+                    .outlet
+                    .outletExternalCode,
+                    'customerExternalCode': delivery_date
+                    .warehouse
+                    .customerExternalCode,
+                    'deliveryDate': deliv_date,
+                    'deadLine': delivery_date.deadLine,
+                    'minSum': delivery_date.minSum,
+                    'status': status,
+                })
     elif way == 'outletPayForms':
         for pay_forms in OutletPayForm.objects.all():
             data.append({

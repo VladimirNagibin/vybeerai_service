@@ -6,8 +6,8 @@ from django.db import IntegrityError, connection
 
 from orders.models import (DeliveryDate, Denial, Operation, OperationOutlet,
                            Order, OrderDetail, OrderHDenial, OrderInvoice,
-                           OutletPayForm, PayForm, PriceList, SalOutDetail,
-                           SyncOrder)
+                           OutletPayForm, PayForm, PriceList, SalOutDetail,)
+                           #SyncOrder)
 from products.models import (Attribut, AttributValue, Package, Pictograph,
                              Product, ProductAttributValue, ProductImages)
 from warehouses.models import Outlet, Warehouse, ProductStock
@@ -72,9 +72,9 @@ DATA = (
     ('orderDetail.csv',
      OrderDetail,
      ['id', 'order_id', 'product_id', 'price', 'basePrice', 'qty']),
-    ('syncOrder.csv',
-     SyncOrder,
-     ['id', 'order_id', 'statusOrder']),
+    #('syncOrder.csv',
+    # SyncOrder,
+    # ['id', 'order_id', 'statusOrder']),
     ('denial.csv',
      Denial,
      ['id', 'denialExternalCode', 'name', 'denialCode']),
