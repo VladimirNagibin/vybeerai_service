@@ -6,7 +6,7 @@ from core.constants import (CODE_EXT_MAX_LENGHT, COMMENT_MAX_LENGHT,
                             DEAD_LINE_MAX_LENGHT, NAME_EXT_MAX_LENGHT,
                             NAME_MAX_LENGHT, PRESENTATION_MAX_LENGTH)
 from products.models import Product
-from warehouses.models import Warehouse
+from warehouses.models import Outlet, Warehouse
 
 
 class Operation(models.Model):
@@ -45,34 +45,36 @@ class OperationOutlet(models.Model):
         verbose_name='операция',
         related_name='operatin_outlets',
     )
-    warehouse = models.ForeignKey(
-        Warehouse,
+    outlet = models.ForeignKey(
+        Outlet,
         on_delete=models.CASCADE,
-        verbose_name='склад',
+        verbose_name='ТТ',
         related_name='operations_outlet',
+        null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
 
     class Meta:
-        ordering = ('warehouse', 'operation')
+        ordering = ('outlet', 'operation')
         verbose_name = 'операция по торговой точке'
         verbose_name_plural = 'Операции по торговым точкам'
         constraints = (
             models.UniqueConstraint(
-                fields=('warehouse', 'operation'),
-                name='unique_warehouse_operation'
+                fields=('outlet', 'operation'),
+                name='unique_outlet_operation'
             ),
         )
 
     def __str__(self):
-        return f'{self.warehouse} {self.operation}'
+        return f'{self.outlet} {self.operation}'
 
 
 class DeliveryDate(models.Model):
-    warehouse = models.OneToOneField(
-        Warehouse,
+    outlet = models.ForeignKey(
+        Outlet,
         on_delete=models.CASCADE,
-        verbose_name='склад',
-        related_name='delivery_dates',
+        verbose_name='ТТ',
+        related_name='deliverydates_outlet',
+        null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     deliveryDate = models.CharField(
         'Дни доставки',
@@ -97,12 +99,12 @@ class DeliveryDate(models.Model):
     )
 
     class Meta:
-        ordering = ('warehouse',)
+        ordering = ('outlet',)
         verbose_name = 'дни доставки и мин сумма'
         verbose_name_plural = 'Дни доставки и мин суммы'
 
     def __str__(self):
-        return (f'{self.warehouse} {self.deliveryDate} {self.deadLine} '
+        return (f'{self.outlet} {self.deliveryDate} {self.deadLine} '
                 f'{self.minSum}')
 
 
@@ -152,11 +154,12 @@ class OutletPayForm(models.Model):
         verbose_name='форма оплаты',
         related_name='payform_outlets',
     )
-    warehouse = models.OneToOneField(
-        Warehouse,
+    outlet = models.ForeignKey(
+        Outlet,
         on_delete=models.CASCADE,
-        verbose_name='склад',
-        related_name='payforms_outlet',
+        verbose_name='ТТ',
+        related_name='outlet_payforms',
+        null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
 
     class Meta:
@@ -165,7 +168,7 @@ class OutletPayForm(models.Model):
         verbose_name_plural = 'форма оплаты по торговым точкам'
 
     def __str__(self):
-        return f'{self.warehouse} {self.payForm}'
+        return f'{self.outlet} {self.payForm}'
 
 
 class PriceList(models.Model):
@@ -253,6 +256,13 @@ class Order(models.Model):
         Warehouse,
         on_delete=models.CASCADE,
         verbose_name='склад',
+    )
+    outlet = models.ForeignKey(
+        Outlet,
+        on_delete=models.CASCADE,
+        verbose_name='ТТ',
+        related_name='orders',
+        null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     payForm = models.ForeignKey(
         PayForm,

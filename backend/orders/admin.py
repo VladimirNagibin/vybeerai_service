@@ -125,7 +125,7 @@ class OrderInvoiceAdmin(admin.ModelAdmin):
 
 @admin.register(OperationOutlet)
 class OperationOutletAdmin(admin.ModelAdmin):
-    list_display = ('operation', 'warehouse')
+    list_display = ('operation', 'outlet')
     #list_editable = ('denial',)
     #search_fields = ('denial',)
     #list_filter = ('denial',)

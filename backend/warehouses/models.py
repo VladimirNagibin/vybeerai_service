@@ -16,7 +16,14 @@ class Outlet(models.Model):
     outletName = models.CharField(
         'Наименование ТТ в 1С',
         max_length=NAME_MAX_LENGHT,
-        unique=True,
+        # unique=True,
+    )
+    warehouse = models.ForeignKey(
+        'Warehouse',
+        on_delete=models.CASCADE,
+        verbose_name='склад',
+        related_name='outlets',
+        null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
     # outletClassificationExternalCode
     # outletAddress
@@ -63,12 +70,12 @@ class Warehouse(models.Model):
         null=True,
         blank=True,
     )
-    outlet = models.OneToOneField(
-        Outlet,
-        on_delete=models.CASCADE,
-        verbose_name='Торговая точка',
-        related_name='warehouses',
-    )
+    #outlet = models.OneToOneField(
+    #    Outlet,
+    #    on_delete=models.CASCADE,
+    #    verbose_name='Торговая точка',
+    #    related_name='warehouses',
+    #)
 
     class Meta:
         ordering = ('warehouseName',)

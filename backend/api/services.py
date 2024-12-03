@@ -10,7 +10,7 @@ from orders.models import (Company, DeliveryDate, OperationOutlet, Order,
                            OrderDetail, OutletData, OutletPayForm, PayForm,
                            PriceList, TypeStatusCompany, TypeStatusOrders)
 from products.models import Product, ProductAttributValue
-from warehouses.models import ProductStock, Warehouse
+from warehouses.models import Outlet, ProductStock, Warehouse
 
 load_dotenv()
 
@@ -112,18 +112,18 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'outletWarehouses':
-        for warehouse in Warehouse.objects.all():
+        for outlet in Outlet.objects.all():
             data.append({
-                'outletExternalCode': warehouse.outlet.outletExternalCode,
-                'warehouseExternalCode': warehouse.warehouseExternalCode,
-                'customerExternalCode': warehouse.customerExternalCode,
+                'outletExternalCode': outlet.outletExternalCode,
+                'warehouseExternalCode': outlet.warehouse
+                .warehouseExternalCode,
+                'customerExternalCode': outlet.warehouse.customerExternalCode,
                 'status': status,
             })
     elif way == 'operations':
         for operation in OperationOutlet.objects.all():
             data.append({
                 'outletExternalCode': operation
-                .warehouse
                 .outlet
                 .outletExternalCode,
                 'operationExternalCode': operation
@@ -133,6 +133,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 .operation
                 .operationName,
                 'customerExternalCode': operation
+                .outlet
                 .warehouse
                 .customerExternalCode,
                 'coefficient': operation
@@ -145,10 +146,10 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             for deliv_date in delivery_date.deliveryDate.split(', '):
                 data.append({
                     'outletExternalCode': delivery_date
-                    .warehouse
                     .outlet
                     .outletExternalCode,
                     'customerExternalCode': delivery_date
+                    .outlet
                     .warehouse
                     .customerExternalCode,
                     'deliveryDate': deliv_date,
@@ -160,11 +161,11 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for pay_forms in OutletPayForm.objects.all():
             data.append({
                 'outletExternalCode': pay_forms
-                .warehouse
                 .outlet
                 .outletExternalCode,
                 'payFormExternalCode': pay_forms.payForm.payFormExternalCode,
                 'customerExternalCode': pay_forms
+                .outlet
                 .warehouse
                 .customerExternalCode,
                 'status': status,

@@ -4,14 +4,6 @@ from .models import Outlet, ProductStock, Warehouse
 from orders.models import DeliveryDate, OperationOutlet, OutletPayForm
 
 
-@admin.register(Outlet)
-class OutletAdmin(admin.ModelAdmin):
-    list_display = ('outletExternalCode', 'outletName',)
-    list_editable = ('outletName',)
-    search_fields = ('outletName',)
-    list_filter = ('outletName',)
-
-
 class OperationOutletInline(admin.TabularInline):
     model = OperationOutlet
     extra = 0
@@ -27,11 +19,19 @@ class PayFormInline(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Outlet)
+class OutletAdmin(admin.ModelAdmin):
+    inlines = (DeliveryDateInline, PayFormInline, OperationOutletInline)
+    list_display = ('outletExternalCode', 'outletName', 'warehouse')
+    list_editable = ('outletName',)
+    search_fields = ('outletName',)
+    list_filter = ('outletName',)
+
+
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
-    inlines = (OperationOutletInline, DeliveryDateInline, PayFormInline)
     list_display = ('warehouseExternalCode', 'customerExternalCode',
-                    'warehouseName', 'outlet', 'allowTareReturn')
+                    'warehouseName', 'allowTareReturn')
     list_editable = ('warehouseName',)
     search_fields = ('warehouseName',)
     list_filter = ('warehouseName',)
