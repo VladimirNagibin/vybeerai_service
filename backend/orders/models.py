@@ -324,6 +324,12 @@ class Order(models.Model):
                 f'{self.comment[:PRESENTATION_MAX_LENGTH]}')
 
 
+class TypeStatusCompany(models.IntegerChoices):
+    RECEIVED = 1, 'Получен'
+    CODE_RECEIVED = 2, 'Получен код УС'
+    CONFIRMED = 3, 'Отправлен код УС'
+
+
 class Company(models.Model):
     inn = models.CharField(
         'ИНН',
@@ -337,6 +343,21 @@ class Company(models.Model):
     )
     code_B24 = models.PositiveIntegerField('Код Битрикс', unique=True,
                                            null=True, default=None)
+    tempOutletCode = models.CharField(
+        'Временный внешний код ТТ',
+        max_length=NAME_EXT_MAX_LENGHT,
+        blank=True,
+    )
+    realExternalCode = models.CharField(
+        'Код в УС',
+        max_length=NAME_EXT_MAX_LENGHT,
+        blank=True,
+    )
+    status = models.PositiveSmallIntegerField(
+        'Статус',
+        choices=TypeStatusCompany.choices,
+        default=TypeStatusCompany.RECEIVED,
+    )
 
     class Meta:
         ordering = ('inn',)

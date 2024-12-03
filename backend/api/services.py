@@ -8,7 +8,7 @@ from .serializers import (CompanySerializer, OrderDetailSerializer,
                           OrderSerializer, OutletDataSerializer)
 from orders.models import (Company, DeliveryDate, OperationOutlet, Order,
                            OrderDetail, OutletData, OutletPayForm, PayForm,
-                           PriceList, TypeStatusOrders)
+                           PriceList, TypeStatusCompany, TypeStatusOrders)
 from products.models import Product, ProductAttributValue
 from warehouses.models import ProductStock, Warehouse
 
@@ -34,6 +34,7 @@ ENDPOINTS = {
     'orders': f'/SyncOrder/orders/{SUPPLIER_ID}',
     'syncOrders': '/SyncOrder/syncOrders',
     'send_orders_b24': '/send_orders_b24',
+    'set_real_code': '/set-real-external-code',
 }
 
 
@@ -201,6 +202,13 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         orders = Order.objects.filter(status=TypeStatusOrders.SEND_B24)
         for order in orders:
             data.append({'orderNo': order.orderNo})
+    elif way == 'set_real_code':
+        companies = Company.objects.filter(
+            status=TypeStatusCompany.CODE_RECEIVED
+        )
+        for company in companies:
+            data.append({'potentialExternalCode': company.tempOutletCode,
+                         'realExternalCode': company.realExternalCode})
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')
@@ -254,7 +262,8 @@ def create_orders(data):
             contact_person = outlet_data.get('contactPerson')
             company_doc = Company.objects.filter(inn=inn)
             data_company = {'inn': inn,
-                            'legalName': legal_name if legal_name else ''}
+                            'legalName': legal_name if legal_name else '',
+                            'tempOutletCode': temp_outlet_code}
             print(data_company)
             if company_doc:
                 ser_company = CompanySerializer(company_doc[0],

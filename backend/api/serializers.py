@@ -251,7 +251,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ('inn', 'legalName')
+        fields = ('inn', 'legalName', 'tempOutletCode')
 
 
 class OutletDataSerializer(serializers.ModelSerializer):
