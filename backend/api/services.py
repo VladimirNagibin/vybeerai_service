@@ -213,11 +213,11 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             data.append({'orderNo': order.orderNo})
     elif way == 'set_real_code':
         companies = Outlet.objects.filter(
-            status=TypeStatusCompany.CODE_RECEIVED
+            status=TypeStatusCompany.RECEIVED
         )
         for company in companies:
             data.append({'potentialExternalCode': company.tempOutletCode,
-                         'realExternalCode': company.realExternalCode})
+                         'realExternalCode': company.outletExternalCode})
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')

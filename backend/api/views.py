@@ -33,6 +33,10 @@ def send_request(request, way):
                 create_orders(response)
         elif way == 'send_orders_b24':
             response = SendRequest.send_orders_b24()
+        elif way == 'set_real_code':
+            for dat in data:
+                respon = SendRequest.send_request_token(endpoint, dat)
+            response = respon  # adding ========================================
         else:
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange

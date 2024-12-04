@@ -12,6 +12,7 @@ from .exceptions import (RequestB24Exception, SendRequestException,
                          TokenReceivingException)
 from .send_message import SendMessage
 from orders.models import Order, OrderDetail, TypeStatusOrders
+from warehouses.models import Outlet, TypeStatusCompany
 
 load_dotenv()
 
@@ -99,6 +100,8 @@ class SendRequest:
                     'supplierId': supplierId,
                     'orders': data
                 }
+            elif endpoint == '/set-real-external-code':
+                params = data
             else:
                 params = {
                     'supplierId': supplierId,
@@ -126,6 +129,13 @@ class SendRequest:
                     order = Order.objects.get(orderNo=order_no['orderNo'])
                     order.status = TypeStatusOrders.CONFIRMED
                     order.save()
+            elif endpoint == '/set-real-external-code':
+                real_external_code = data['realExternalCode']
+                outlet = Outlet.objects.get(
+                    outletExternalCode=real_external_code
+                )
+                outlet.status = TypeStatusCompany.CONFIRMED
+                outlet.save()
             return r_text
         error_log = (f'Error send request. Status code: `{status_code}`. '
                      f'{r_text}')
