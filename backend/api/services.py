@@ -4,13 +4,13 @@ import os
 from dotenv import load_dotenv
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
-from .serializers import (CompanySerializer, OrderDetailSerializer,
-                          OrderSerializer, OutletDataSerializer)
-from orders.models import (Company, DeliveryDate, OperationOutlet, Order,
-                           OrderDetail, OutletData, OutletPayForm, PayForm,
-                           PriceList, TypeStatusCompany, TypeStatusOrders)
+from .serializers import (OrderDetailSerializer, OrderSerializer)
+from orders.models import (DeliveryDate, Operation, OperationOutlet, Order,
+                           OrderDetail, Outlet, OutletPayForm, PayForm,
+                           PriceList, TypeStatusOrders)
 from products.models import Product, ProductAttributValue
-from warehouses.models import Outlet, ProductStock, Warehouse
+from warehouses.models import (Outlet, ProductStock, TypeStatusCompany,
+                               Warehouse)
 
 load_dotenv()
 
@@ -112,7 +112,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'outletWarehouses':
-        for outlet in Outlet.objects.all():
+        for outlet in Outlet.objects.filter(
+            status=TypeStatusCompany.CONFIRMED
+        ):
             data.append({
                 'outletExternalCode': outlet.outletExternalCode,
                 'warehouseExternalCode': outlet.warehouse
@@ -121,7 +123,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'operations':
-        for operation in OperationOutlet.objects.all():
+        for operation in OperationOutlet.objects.filter(
+            outlet__status=TypeStatusCompany.CONFIRMED
+        ):
             data.append({
                 'outletExternalCode': operation
                 .outlet
@@ -142,7 +146,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 'status': status,
             })
     elif way == 'deliveryDates':
-        for delivery_date in DeliveryDate.objects.all():
+        for delivery_date in DeliveryDate.objects.filter(
+            outlet__status=TypeStatusCompany.CONFIRMED
+        ):
             for deliv_date in delivery_date.deliveryDate.split(', '):
                 data.append({
                     'outletExternalCode': delivery_date
@@ -158,7 +164,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                     'status': status,
                 })
     elif way == 'outletPayForms':
-        for pay_forms in OutletPayForm.objects.all():
+        for pay_forms in OutletPayForm.objects.filter(
+            outlet__status=TypeStatusCompany.CONFIRMED
+        ):
             data.append({
                 'outletExternalCode': pay_forms
                 .outlet
@@ -204,7 +212,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for order in orders:
             data.append({'orderNo': order.orderNo})
     elif way == 'set_real_code':
-        companies = Company.objects.filter(
+        companies = Outlet.objects.filter(
             status=TypeStatusCompany.CODE_RECEIVED
         )
         for company in companies:
@@ -254,38 +262,44 @@ def create_orders(data):
             ser_product.save()
         outlet_data = order.get('outletData')
         if outlet_data:
-            order_no = outlet_data['orderNo']
             temp_outlet_code = outlet_data['tempOutletCode']
-            inn = outlet_data['inn']
-            legal_name = outlet_data.get('legalName')
-            delivery_address = outlet_data.get('deliveryAddress')
-            phone = outlet_data['phone']
-            contact_person = outlet_data.get('contactPerson')
-            company_doc = Company.objects.filter(inn=inn)
-            data_company = {'inn': inn,
-                            'legalName': legal_name if legal_name else '',
-                            'tempOutletCode': temp_outlet_code}
-            print(data_company)
-            if company_doc:
-                ser_company = CompanySerializer(company_doc[0],
-                                                data=data_company)
-            else:
-                ser_company = CompanySerializer(data=data_company)
-            ser_company.is_valid(raise_exception=True)
-            company = ser_company.save()
-            outlet_data_doc = OutletData.objects.filter(order=order_instance)
-            data_outlet_data = {'orderNo': order_no,
-                                'tempOutletCode': temp_outlet_code,
-                                'company': company.pk,
-                                'deliveryAddress':
-                                delivery_address if delivery_address else '',
-                                'phone': phone,
-                                'contactPerson':
-                                contact_person if contact_person else ''}
-            if outlet_data_doc:
-                ser_outlet_data = OutletDataSerializer(outlet_data_doc[0],
-                                                       data=data_outlet_data)
-            else:
-                ser_outlet_data = OutletDataSerializer(data=data_outlet_data)
-            ser_outlet_data.is_valid(raise_exception=True)
-            ser_outlet_data.save()
+            legal_name = outlet_data.get('legalName', '')
+            delivery_address = outlet_data.get('deliveryAddress', '')
+            contact_person = outlet_data.get('contactPerson', '')
+            outlet = Outlet(
+                outletExternalCode=temp_outlet_code,
+                outletName=f'TT {legal_name}',
+                warehouse=Warehouse.objects.get(
+                    warehouseExternalCode=order['warehouseExternalCode']
+                ),
+                inn=outlet_data['inn'],
+                legalName=legal_name,
+                tempOutletCode=temp_outlet_code,
+                deliveryAddress=delivery_address,
+                phone=outlet_data['phone'],
+                contactPerson=contact_person,
+            )
+            outlet.save()
+            id = outlet.pk
+            outlet.outletExternalCode = f'TTVY00{id}'
+            outlet.save()
+            OperationOutlet.objects.create(
+                operation=Operation.objects.get(pk=3), outlet=outlet
+            )
+            DeliveryDate.objects.create(outlet=outlet,
+                                        deliveryDate='Пн, Вт, Ср, Чт, Пт',
+                                        deadLine='19:00', minSum=3000.0)
+            OutletPayForm.objects.create(outlet=outlet,
+                                         payForm=PayForm.objects.get(pk=1))
+            order_instance.outlet = outlet
+            order_instance.save()
+        else:
+            try:
+                outlet = Outlet.objects.filter(
+                    outletExternalCode=order['outletExternalCode']
+                )
+                if outlet:
+                    order_instance.outlet = outlet[0]
+                    order_instance.save()
+            except Exception:
+                ...

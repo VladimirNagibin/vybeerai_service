@@ -11,7 +11,7 @@ from rest_framework import status
 from .exceptions import (RequestB24Exception, SendRequestException,
                          TokenReceivingException)
 from .send_message import SendMessage
-from orders.models import Order, OrderDetail, OutletData, TypeStatusOrders
+from orders.models import Order, OrderDetail, TypeStatusOrders
 
 load_dotenv()
 
@@ -150,7 +150,7 @@ class SendRequest:
         status_code_inn = customers_by_inn.status_code
         if status_code_inn == status.HTTP_200_OK:
             result = (customers_by_inn.json().get('result'))
-            if result:
+            if result is not None:
                 inns = [res['ENTITY_ID'] for res in result]
                 if code_B24:
                     if code_B24 in inns:
@@ -185,7 +185,7 @@ class SendRequest:
                                 f'fields[ENTITY_TYPE_ID]=4'
                                 f'&fields[ENTITY_ID]={company_code_B24}'
                                 f'&fields[NAME]=Реквизиты {legal_name}'
-                                '&fields[RQ_INN]={inn}'
+                                f'&fields[RQ_INN]={inn}'
                             )
                             if int(inn) > 10000000000:  # ind businessman
                                 rq_req_text += '&fields[PRESET_ID]=3'
@@ -211,10 +211,9 @@ class SendRequest:
         orders = Order.objects.filter(status=TypeStatusOrders.RECEIVED)
         for order in orders:
             if order.code_B24 is None or order.code_B24 == 0:
-                customers = OutletData.objects.filter(order=order)
-                if customers:
-                    customer = customers[0]
-                    code_B24 = customer.company.code_B24
+                customer = order.outlet
+                if customer:
+                    code_B24 = customer.code_B24
                     delivery_address = customer.deliveryAddress
                     contact_person = customer.contactPerson
                     phone = customer.phone
@@ -227,8 +226,8 @@ class SendRequest:
                     comments += (f'Контактное лицо: {contact_person}\n'
                                  if contact_person else '')
                     comments += f'{order.comment}'
-                    inn = customer.company.inn
-                    legal_name = customer.company.legalName
+                    inn = customer.inn
+                    legal_name = customer.legalName
                     phone = customer.phone
                     code_B24_B24 = SendRequest.check_company(
                         inn, legal_name, code_B24, delivery_address,
@@ -327,6 +326,8 @@ class SendRequest:
                         f'Error send request B24 {status_code}'
                     )
             else:
-                ...
-                #  Code B24 exist, but status not sender
+                raise SendRequestException(
+                    f'Order code B24 <{order.code_B24}> exist, '
+                    'but status not send'
+                )
         return 'Orders load'  # Add info about orders

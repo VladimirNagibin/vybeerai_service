@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework_simplejwt.tokens import AccessToken
 
-from orders.models import (Company, Operation, Order, OrderDetail, OutletData,
+from orders.models import (Operation, Order, OrderDetail,
                            PayForm, PriceList)
 from products.models import Package, Pictograph, Product
 from warehouses.models import ProductStock, Warehouse
@@ -247,22 +247,22 @@ class OrderDetailSerializer(serializers.ModelSerializer):
                   'qty', 'vat', 'discount')
 
 
-class CompanySerializer(serializers.ModelSerializer):
+#class CompanySerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Company
-        fields = ('inn', 'legalName', 'tempOutletCode')
+#    class Meta:
+#        model = Company
+#        fields = ('inn', 'legalName', 'tempOutletCode')
 
 
-class OutletDataSerializer(serializers.ModelSerializer):
+#class OutletDataSerializer(serializers.ModelSerializer):
 
-    orderNo = serializers.SlugRelatedField(
-        queryset=Order.objects.all(),
-        slug_field='orderNo',
-        source='order'
-    )
+#    orderNo = serializers.SlugRelatedField(
+#        queryset=Order.objects.all(),
+#        slug_field='orderNo',
+#        source='order'
+#    )
 
-    class Meta:
-        model = OutletData
-        fields = ('orderNo', 'tempOutletCode', 'company', 'deliveryAddress',
-                  'phone', 'contactPerson')
+#    class Meta:
+#        model = OutletData
+#        fields = ('orderNo', 'tempOutletCode', 'company', 'deliveryAddress',
+#                  'phone', 'contactPerson')

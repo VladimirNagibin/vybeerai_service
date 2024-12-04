@@ -1,10 +1,16 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from core.constants import (NAME_EXT_MAX_LENGHT, NAME_MAX_LENGHT,
-                            PRESENTATION_MAX_LENGTH)
+from core.constants import (COMMENT_MAX_LENGHT, NAME_EXT_MAX_LENGHT,
+                            NAME_MAX_LENGHT, PRESENTATION_MAX_LENGTH)
 
 from products.models import Product
+
+
+class TypeStatusCompany(models.IntegerChoices):
+    RECEIVED = 1, 'Получен'
+    CODE_RECEIVED = 2, 'Получен код УС'
+    CONFIRMED = 3, 'Отправлен код УС'
 
 
 class Outlet(models.Model):
@@ -17,6 +23,7 @@ class Outlet(models.Model):
         'Наименование ТТ в 1С',
         max_length=NAME_MAX_LENGHT,
         # unique=True,
+        blank=True,
     )
     warehouse = models.ForeignKey(
         'Warehouse',
@@ -25,6 +32,50 @@ class Outlet(models.Model):
         related_name='outlets',
         null=True  # CHECKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     )
+    inn = models.CharField(
+        'ИНН',
+        max_length=NAME_EXT_MAX_LENGHT,
+        #unique=True,
+        blank=True
+    )
+    legalName = models.CharField(
+        'Юридическое название',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+    code_B24 = models.PositiveIntegerField('Код Битрикс', #unique=True,
+                                           null=True, default=None)
+    tempOutletCode = models.CharField(
+        'Временный внешний код ТТ',
+        max_length=NAME_EXT_MAX_LENGHT,
+        blank=True,
+    )
+    #realExternalCode = models.CharField(
+    #    'Код в УС',
+    #    max_length=NAME_EXT_MAX_LENGHT,
+    #    blank=True,
+    #)
+    status = models.PositiveSmallIntegerField(
+        'Статус',
+        choices=TypeStatusCompany.choices,
+        default=TypeStatusCompany.RECEIVED,
+    )
+    deliveryAddress = models.CharField(
+        'Адрес доставки',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+    phone = models.CharField(
+        'Телефон',
+        max_length=NAME_EXT_MAX_LENGHT,
+        blank=True,
+    )
+    contactPerson = models.CharField(
+        'Контактное лицо',
+        max_length=COMMENT_MAX_LENGHT,
+        blank=True,
+    )
+
     # outletClassificationExternalCode
     # outletAddress
     # deliveryAddress
@@ -39,8 +90,8 @@ class Outlet(models.Model):
 
     class Meta:
         ordering = ('outletName',)
-        verbose_name = 'торговая точка'
-        verbose_name_plural = 'Торговые точки'
+        verbose_name = 'компания'
+        verbose_name_plural = 'Компании'
 
     def __str__(self):
         return self.outletName[:PRESENTATION_MAX_LENGTH]

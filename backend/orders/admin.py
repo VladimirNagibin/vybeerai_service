@@ -1,9 +1,8 @@
 from django.contrib import admin
 
-from .models import (Company, DeliveryDate, Denial, Operation, OperationOutlet,
+from .models import (DeliveryDate, Denial, Operation, OperationOutlet,
                      Order, OrderDetail, OrderHDenial, OrderInvoice,
-                     OutletData, OutletPayForm, PayForm, PriceList,
-                     SalOutDetail)
+                     OutletPayForm, PayForm, PriceList, SalOutDetail)
 
 
 @admin.register(Operation)
@@ -48,9 +47,9 @@ class OrderDetailInline(admin.TabularInline):
     extra = 0
 
 
-class OutletDataInline(admin.TabularInline):
-    model = OutletData
-    extra = 0
+#class OutletDataInline(admin.TabularInline):
+#    model = OutletData
+#    extra = 0
 
 
 class OrderHDenialInline(admin.TabularInline):
@@ -60,7 +59,7 @@ class OrderHDenialInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    inlines = (OutletDataInline, OrderDetailInline, OrderHDenialInline)
+    inlines = (OrderDetailInline, OrderHDenialInline)
     list_display = (
         'orderNo',
         'mainOrderNo',
@@ -81,9 +80,9 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ('status', 'orderNo', 'warehouse')
 
 
-@admin.register(Company)
-class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('inn', 'legalName', 'code_B24')
+#@admin.register(Company)
+#class CompanyAdmin(admin.ModelAdmin):
+#    list_display = ('inn', 'legalName', 'code_B24')
 
 
 @admin.register(Denial)
