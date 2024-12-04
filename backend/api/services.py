@@ -21,7 +21,7 @@ STATUS_CHANGE_OR_UPDATE = 2
 
 
 ENDPOINTS = {
-    'productWarehouses': '/Warehouse/productWarehouses',
+    'productWarehouses': '/Warehouse/productWarehouses/',
     'loadProduct': '/Product/loadProduct/',
     'loadProductAttributs': '/Product/loadProductAttributs/',
     'productStocks': '/Warehouse/productStocks/',

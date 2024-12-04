@@ -66,6 +66,7 @@ class SendRequest:
         status_code = response.status_code
         if status_code == status.HTTP_200_OK:
             token = response.text
+            #token = response.json()
             cache.set('token', token, TIME_TOKEN)
             return token
         try:
@@ -106,6 +107,7 @@ class SendRequest:
                     'data': data
                 }
         request_info = (f'endpoint: {endpoint}, headers: {headers}, '
+                        f'http method: {http_method}, '
                         f'params: {params}')
         request_info = request_info.replace(token, 'token')
         SendRequest.logger.debug(f'Start send request {request_info}')

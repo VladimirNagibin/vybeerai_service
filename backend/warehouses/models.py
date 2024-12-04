@@ -65,7 +65,7 @@ class Warehouse(models.Model):
         unique=True,
     )
     allowTareReturn = models.BooleanField(
-        'Allow tare return',
+        'Признак возврата тары: 1-да, 0-нет',
         default=False,
         null=True,
         blank=True,
