@@ -141,7 +141,7 @@ class SendRequest:
                      f'{r_text}')
         SendRequest.logger.critical(error_log)
         SendMessage.send_message(error_log)
-        raise SendRequestException(f'Error send request {status_code}')
+        raise SendRequestException(f'{error_log}')
 
     @staticmethod
     def check_company_field(code_B24, delivery_address, contact_person, phone):
