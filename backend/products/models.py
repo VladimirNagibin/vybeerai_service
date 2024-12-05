@@ -47,6 +47,13 @@ class GroupProduct(models.Model):
         unique=True,
     )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'группа'
+        verbose_name_plural = 'Группы'
+
+    def __str__(self):
+        return self.name
 
 class Product(models.Model):
     productExternalCode = models.CharField(
