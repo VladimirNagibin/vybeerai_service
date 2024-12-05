@@ -40,7 +40,7 @@ class Pictograph(models.Model):
         return self.pictographName[:PRESENTATION_MAX_LENGTH]
 
 
-class Group(models.Model):
+class GroupProduct(models.Model):
     name = models.CharField(
         'Группа',
         max_length=NAME_MAX_LENGHT,
@@ -113,7 +113,7 @@ class Product(models.Model):
     )
     active = models.BooleanField('Товар выгружается', default=True)
     group = models.ForeignKey(
-        Group,
+        GroupProduct,
         on_delete=models.CASCADE,
         verbose_name='Группа',
         related_name='products',

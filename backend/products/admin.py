@@ -3,8 +3,8 @@ from django.contrib.auth.models import Group
 from django.utils.safestring import mark_safe
 
 from orders.models import PriceList
-from .models import (Attribut, AttributValue, Group, Package, Pictograph,
-                     Product, ProductAttributValue, ProductImages)
+from .models import (Attribut, AttributValue, GroupProduct, Package,
+                     Pictograph, Product, ProductAttributValue, ProductImages)
 from warehouses.models import ProductStock
 
 admin.site.unregister(Group)
@@ -101,8 +101,8 @@ class ProductImagesAdmin(admin.ModelAdmin):
             )
 
 
-@admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
+@admin.register(GroupProduct)
+class GroupProductAdmin(admin.ModelAdmin):
     list_display = ('name',)
     #list_editable = ('attributsValue', 'attributsValueSortOrder')
     search_fields = ('name',)
