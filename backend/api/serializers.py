@@ -98,8 +98,8 @@ class CheckProductsSerializer(serializers.Serializer):
             product for product in Product.objects.filter(active=True)
         }
         for check_product in validated_data['check_products']:
-            logger = logging.getLogger(__name__)
-            logger.debug(f'{type(check_product["group"])}===============')
+            #logger = logging.getLogger(__name__)
+            #logger.debug(f'{type(check_product["group"])}===============')
             product_code, product_name = (check_product['productExternalCode'],
                                           check_product['productExternalName'])
             current_product = Product.objects.filter(
@@ -122,11 +122,12 @@ class CheckProductsSerializer(serializers.Serializer):
                 )
             else:
             #    cur_product = current_product[0]
-                logger.debug(f'{type(check_product["group"])}===============')
+                #logger.debug(f'{type(check_product["group"])}===============')
                 product_active.discard(current_product[0])
                 current_product.update(group=check_product.get('group'),
                                        productExternalName=product_name,
                                        codeBitrix=check_product['codeBitrix'])
+                if not 
             #    cur_product.productExternalName = product_name
             #    cur_product.codeBitrix = check_product['codeBitrix']
             #    cur_product.group = check_product.get('group'),

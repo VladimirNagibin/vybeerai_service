@@ -38,14 +38,16 @@ class ProductAdmin(admin.ModelAdmin):
         'productExternalCode',
         'productExternalName',
         'productName',
+        'volume',
+        'description',
         'group',
         'active',
         'codeBitrix',
         'package',
-        'volume',
     )
-    list_editable = ('productName', 'active', 'volume',)
-    search_fields = ('productName', 'description', 'productExternalName')
+    list_editable = ('productName', 'active', 'volume', 'description')
+    search_fields = ('productExternalCode','productName', 'description',
+                     'productExternalName')
     list_filter = ('group', 'active', 'package')
 
 
