@@ -127,7 +127,7 @@ class CheckProductsSerializer(serializers.Serializer):
                 current_product.update(group=check_product.get('group'),
                                        productExternalName=product_name,
                                        codeBitrix=check_product['codeBitrix'])
-                if not 
+            #    if not 
             #    cur_product.productExternalName = product_name
             #    cur_product.codeBitrix = check_product['codeBitrix']
             #    cur_product.group = check_product.get('group'),
