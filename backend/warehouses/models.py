@@ -10,7 +10,8 @@ from products.models import Product
 class TypeStatusCompany(models.IntegerChoices):
     RECEIVED = 1, 'Получен'
     CODE_RECEIVED = 2, 'Получен код УС'
-    CONFIRMED = 3, 'Отправлен код УС'
+    CONFIRMED = 3, 'Отправлен код в Выбирай'
+    CANCEL = 4, 'Отменён в Выбирай'
 
 
 class Outlet(models.Model):

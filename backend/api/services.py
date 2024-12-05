@@ -35,6 +35,7 @@ ENDPOINTS = {
     'syncOrders': '/SyncOrder/syncOrders',
     'send_orders_b24': '/send_orders_b24',
     'set_real_code': '/set-real-external-code',
+    'del_real_code': '/close-outlet',
 }
 
 
@@ -218,6 +219,12 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for company in companies:
             data.append({'potentialExternalCode': company.tempOutletCode,
                          'realExternalCode': company.outletExternalCode})
+    elif way == 'del_real_code':
+        companies = Outlet.objects.filter(
+            status=TypeStatusCompany.CANCEL
+        )
+        for company in companies:
+            data.append({'externalCode': company.outletExternalCode})
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')

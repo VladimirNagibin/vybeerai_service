@@ -37,6 +37,10 @@ def send_request(request, way):
             for dat in data:
                 respon = SendRequest.send_request_token(endpoint, dat)
             response = respon  # adding ========================================
+        elif way == 'del_real_code':
+            for dat in data:
+                respon = SendRequest.send_request_token(endpoint, dat)
+            response = respon  # adding ========================================
         else:
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange

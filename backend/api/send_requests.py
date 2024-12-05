@@ -102,6 +102,8 @@ class SendRequest:
                 }
             elif endpoint == '/set-real-external-code':
                 params = data
+            elif endpoint == '/close-outlet':
+                params = data
             else:
                 params = {
                     'supplierId': supplierId,
