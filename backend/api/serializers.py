@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from orders.models import (Operation, Order, OrderDetail,
                            PayForm, PriceList)
-from products.models import Package, Pictograph, Product
+from products.models import GroupProduct, Package, Pictograph, Product
 from warehouses.models import ProductStock, Warehouse
 
 User = get_user_model()
@@ -71,10 +71,14 @@ class CheckProductSerializer(serializers.Serializer):
         slug_field='packageName'
     )
     codeBitrix = serializers.CharField()
+    group = SlugRelatedField(
+        queryset=GroupProduct.objects.all(),
+        slug_field='name'
+    )
 
     class Meta:
         fields = ('productExternalCode', 'productExternalName', 'package',
-                  'codeBitrix')
+                  'codeBitrix', 'group')
 
 
 class CheckProductsSerializer(serializers.Serializer):
@@ -109,6 +113,7 @@ class CheckProductsSerializer(serializers.Serializer):
                         description='-----',
                         pictograph=Pictograph.objects.get(pk=7),
                         active=False,
+                        group=check_product['group'],
                     )
                 )
             else:
@@ -116,6 +121,7 @@ class CheckProductsSerializer(serializers.Serializer):
                 product_active.discard(current_product[0])
                 cur_product.productExternalName = product_name
                 cur_product.codeBitrix = check_product['codeBitrix']
+                cur_product.group = check_product['group'],
                 product_update.append(cur_product)
         if product_active:
             for product in product_active:
