@@ -40,6 +40,14 @@ class Pictograph(models.Model):
         return self.pictographName[:PRESENTATION_MAX_LENGTH]
 
 
+class Group(models.Model):
+    name = models.CharField(
+        'Группа',
+        max_length=NAME_MAX_LENGHT,
+        unique=True,
+    )
+
+
 class Product(models.Model):
     productExternalCode = models.CharField(
         'Код в 1С',
@@ -104,6 +112,13 @@ class Product(models.Model):
                    'данных по сегменту.'),
     )
     active = models.BooleanField('Товар выгружается', default=True)
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        verbose_name='Группа',
+        related_name='products',
+        null=True,
+    )
     # productExternalCode2 = models.CharField(
     #    'Код продукта',
     #    max_length=EAN_MAX_LENGHT,
