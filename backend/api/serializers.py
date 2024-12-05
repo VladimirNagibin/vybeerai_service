@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -96,6 +98,8 @@ class CheckProductsSerializer(serializers.Serializer):
             product for product in Product.objects.filter(active=True)
         }
         for check_product in validated_data['check_products']:
+            logger = logging.getLogger(__name__)
+            logger.debug(f'{type(check_product["group"])}===============')
             product_code, product_name = (check_product['productExternalCode'],
                                           check_product['productExternalName'])
             current_product = Product.objects.filter(
@@ -117,21 +121,26 @@ class CheckProductsSerializer(serializers.Serializer):
                     )
                 )
             else:
-                cur_product = current_product[0]
+            #    cur_product = current_product[0]
+                logger.debug(f'{type(check_product["group"])}===============')
                 product_active.discard(current_product[0])
-                cur_product.productExternalName = product_name
-                cur_product.codeBitrix = check_product['codeBitrix']
-                cur_product.group = check_product['group'],
-                product_update.append(cur_product)
+                current_product.update(group=check_product.get('group'),
+                                       productExternalName=product_name,
+                                       codeBitrix=check_product['codeBitrix'])
+            #    cur_product.productExternalName = product_name
+            #    cur_product.codeBitrix = check_product['codeBitrix']
+            #    cur_product.group = check_product.get('group'),
+                #cur_product.group = GroupProduct.objects.get(pk=1),
+            #    product_update.append(cur_product)
         if product_active:
             for product in product_active:
                 product.active = False
                 product.save()
         if result:
             Product.objects.bulk_create(result)
-        if product_update:
-            Product.objects.bulk_update(product_update,
-                                        ['productExternalName', 'codeBitrix'])
+        #if product_update:
+        #    Product.objects.bulk_update(product_update,)
+        #                                #['productExternalName', 'codeBitrix', 'group'])
         return {"check_products": result}
 
 
