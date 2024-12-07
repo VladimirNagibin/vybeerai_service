@@ -39,9 +39,9 @@ class ProductAdmin(admin.ModelAdmin):
         'productExternalName',
         'productName',
         'volume',
+        'active',
         'description',
         'group',
-        'active',
         'codeBitrix',
         'package',
     )
