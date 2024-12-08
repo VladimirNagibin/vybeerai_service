@@ -52,7 +52,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('productExternalCode', 'productName', 'description',
                      'productExternalName')
     list_filter = ('group', 'active', 'package')
-    readonly_fields = ('attributs', 'images',)
+    readonly_fields = ('attributs', 'images', 'image_of_product',)
 
     @admin.display(description='Атрибуты')
     def attributs(self, obj):
@@ -68,7 +68,8 @@ class ProductAdmin(admin.ModelAdmin):
     def image_of_product(self, obj):
         if obj.images:
             return mark_safe(
-                f'<img src={obj.images.all()[0].image.url} width="80" height="80">'
+                f'<img src={obj.images.all()[0].image.url} '
+                'width="80" height="80">'
             )
 
 
