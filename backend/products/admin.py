@@ -53,7 +53,8 @@ class ProductAdmin(admin.ModelAdmin):
 
     @admin.display(description='Атрибуты')
     def attributs(self, obj):
-        return ', '.join(obj.attribut_values.attributValue)
+        return ', '.join([str(attr.attributValue)
+                          for attr in obj.attribut_values])
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
