@@ -46,6 +46,7 @@ class ProductAdmin(admin.ModelAdmin):
         'group',
         'codeBitrix',
         'package',
+        'image_of_product',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
     search_fields = ('productExternalCode', 'productName', 'description',
@@ -62,6 +63,13 @@ class ProductAdmin(admin.ModelAdmin):
     def images(self, obj):
         return ', '.join([str(image.image)
                           for image in obj.images.all()])
+
+    @admin.display(description='Изображение')
+    def image_of_product(self, obj):
+        if obj.images:
+            return mark_safe(
+                f'<img src={obj.images.all()[0].url} width="80" height="80">'
+            )
 
 
 @admin.register(Package)

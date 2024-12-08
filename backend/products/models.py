@@ -157,7 +157,7 @@ class Product(models.Model):
         verbose_name_plural = 'Товары'
 
     def __str__(self):
-        return self.productName[:PRESENTATION_MAX_LENGTH]
+        return self.productName
 
     def clean(self):
         ...
