@@ -56,12 +56,12 @@ class ProductAdmin(admin.ModelAdmin):
     @admin.display(description='Атрибуты')
     def attributs(self, obj):
         return ', '.join([str(attr.attributValue)
-                          for attr in obj.attribut_values])
+                          for attr in obj.attribut_values.all()])
 
     @admin.display(description='Изображения')
     def images(self, obj):
         return ', '.join([str(image.image)
-                          for image in obj.images])
+                          for image in obj.images.all()])
 
 
 @admin.register(Package)
