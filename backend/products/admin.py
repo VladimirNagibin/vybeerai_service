@@ -51,7 +51,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('productExternalCode', 'productName', 'description',
                      'productExternalName')
     list_filter = ('group', 'active', 'package')
-    readonly_fields = ('attributs1', 'images',)
+    readonly_fields = ('attributs', 'images',)
 
     @admin.display(description='Атрибуты')
     def attributs(self, obj):
