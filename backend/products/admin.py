@@ -44,16 +44,17 @@ class ProductAdmin(admin.ModelAdmin):
         'group',
         'codeBitrix',
         'package',
-        'attributs1',
+        'attributs',
         'images',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
     search_fields = ('productExternalCode', 'productName', 'description',
                      'productExternalName')
     list_filter = ('group', 'active', 'package')
+    readonly_fields = ('attributs1', 'images',)
 
     @admin.display(description='Атрибуты')
-    def attributs1(self, obj):
+    def attributs(self, obj):
         return ', '.join([str(attr.attributValue)
                           for attr in obj.attribut_values])
 
