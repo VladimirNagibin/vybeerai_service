@@ -32,7 +32,6 @@ class PriceListAdmin(admin.ModelAdmin):
     list_display = (
         'product',
         'payForm',
-        'warehouse',
         'price',
         'vat',
         'productType',
