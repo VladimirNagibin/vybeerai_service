@@ -38,6 +38,7 @@ class ProductAdmin(admin.ModelAdmin):
         'productExternalCode',
         'productExternalName',
         'productName',
+        'image_of_product',
         'attributs',
         'images',
         'volume',
@@ -46,7 +47,6 @@ class ProductAdmin(admin.ModelAdmin):
         'group',
         'codeBitrix',
         'package',
-        'image_of_product',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
     search_fields = ('productExternalCode', 'productName', 'description',
