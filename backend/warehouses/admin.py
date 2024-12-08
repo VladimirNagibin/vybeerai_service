@@ -22,7 +22,7 @@ class PayFormInline(admin.TabularInline):
 @admin.register(Outlet)
 class OutletAdmin(admin.ModelAdmin):
     inlines = (DeliveryDateInline, PayFormInline, OperationOutletInline)
-    list_display = ('outletExternalCode', 'outletName', 'warehouse')
+    list_display = ('outletExternalCode', 'outletName', 'status', 'warehouse')
     list_editable = ('outletName',)
     search_fields = ('outletName',)
     list_filter = ('outletName',)

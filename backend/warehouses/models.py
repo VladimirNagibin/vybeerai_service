@@ -92,7 +92,7 @@ class Outlet(models.Model):
     class Meta:
         ordering = ('outletName',)
         verbose_name = 'компания'
-        verbose_name_plural = 'Компании'
+        verbose_name_plural = '\u200BКомпании'
 
     def __str__(self):
         return self.outletName[:PRESENTATION_MAX_LENGTH]
@@ -132,7 +132,7 @@ class Warehouse(models.Model):
     class Meta:
         ordering = ('warehouseName',)
         verbose_name = 'склад'
-        verbose_name_plural = 'Склады'
+        verbose_name_plural = '\u200B\u200BСклады'
 
     def __str__(self):
         return self.warehouseName[:PRESENTATION_MAX_LENGTH]
