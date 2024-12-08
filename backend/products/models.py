@@ -18,7 +18,7 @@ class Package(models.Model):
     class Meta:
         ordering = ('packageName',)
         verbose_name = 'тип единицы измерения'
-        verbose_name_plural = 'Типы единиц измерения'
+        verbose_name_plural = '\u200B\u200B\u200B\u200B\u200BТипы единиц измерения'
 
     def __str__(self):
         return self.packageName[:PRESENTATION_MAX_LENGTH]
@@ -34,7 +34,7 @@ class Pictograph(models.Model):
     class Meta:
         ordering = ('pictographName',)
         verbose_name = 'пиктограмма'
-        verbose_name_plural = 'Пиктограммы'
+        verbose_name_plural = '\u200B\u200B\u200B\u200B\u200B\u200BПиктограммы'
 
     def __str__(self):
         return self.pictographName[:PRESENTATION_MAX_LENGTH]
@@ -50,7 +50,7 @@ class GroupProduct(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name = 'группа'
-        verbose_name_plural = 'Группы'
+        verbose_name_plural = '\u200BГруппы'
 
     def __str__(self):
         return self.name
@@ -190,7 +190,7 @@ class Attribut(models.Model):
 
     class Meta:
         verbose_name = 'атрибут'
-        verbose_name_plural = 'Атрибуты'
+        verbose_name_plural = '\u200B\u200B\u200BАтрибуты'
 
     def __str__(self):
         return self.attributsName[:PRESENTATION_MAX_LENGTH]
@@ -217,7 +217,7 @@ class AttributValue(models.Model):
 
     class Meta:
         verbose_name = 'значение атрибута'
-        verbose_name_plural = 'Значения атрибутов'
+        verbose_name_plural = '\u200B\u200B\u200B\u200BЗначения атрибутов'
 
     def __str__(self):
         return f'{self.attribut.attributsName} {self.attributsValue}'
@@ -263,7 +263,7 @@ class ProductImages(models.Model):
 
     class Meta:
         verbose_name = 'изображение товара'
-        verbose_name_plural = 'Изображения'
+        verbose_name_plural = '\u200B\u200BИзображения'
 
     def __str__(self):
         return (f'{self.product.productName[:PRESENTATION_MAX_LENGTH]} '
