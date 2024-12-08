@@ -109,4 +109,4 @@ class GroupProductAdmin(admin.ModelAdmin):
     list_display = ('name',)
     #list_editable = ('attributsValue', 'attributsValueSortOrder')
     search_fields = ('name',)
-    list_filter = ('name',)
+    #list_filter = ('name',)

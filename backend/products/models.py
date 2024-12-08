@@ -259,7 +259,7 @@ class ProductImages(models.Model):
         verbose_name='Товар',
         related_name='images',
     )
-    image = models.ImageField('Image', upload_to='images')
+    image = models.ImageField('Изображение', upload_to='images')
 
     class Meta:
         verbose_name = 'изображение товара'
