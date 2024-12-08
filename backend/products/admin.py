@@ -44,7 +44,7 @@ class ProductAdmin(admin.ModelAdmin):
         'group',
         'codeBitrix',
         'package',
-        'attributs',
+        'attributs1',
         'images',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
@@ -53,7 +53,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('group', 'active', 'package')
 
     @admin.display(description='Атрибуты')
-    def attributs(self, obj):
+    def attributs1(self, obj):
         return ', '.join([str(attr.attributValue)
                           for attr in obj.attribut_values])
 
