@@ -45,9 +45,10 @@ class ProductAdmin(admin.ModelAdmin):
         'codeBitrix',
         'package',
         'attributs',
+        'images',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
-    search_fields = ('productExternalCode','productName', 'description',
+    search_fields = ('productExternalCode', 'productName', 'description',
                      'productExternalName')
     list_filter = ('group', 'active', 'package')
 
@@ -55,6 +56,12 @@ class ProductAdmin(admin.ModelAdmin):
     def attributs(self, obj):
         return ', '.join([str(attr.attributValue)
                           for attr in obj.attribut_values])
+
+    @admin.display(description='Изображения')
+    def images(self, obj):
+        return ', '.join([str(image.image)
+                          for image in obj.images])
+
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
