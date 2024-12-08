@@ -44,12 +44,16 @@ class ProductAdmin(admin.ModelAdmin):
         'group',
         'codeBitrix',
         'package',
+        'attributs',
     )
     list_editable = ('productName', 'active', 'volume', 'description')
     search_fields = ('productExternalCode','productName', 'description',
                      'productExternalName')
     list_filter = ('group', 'active', 'package')
 
+    @admin.display(description='Атрибуты')
+    def attributs(self, obj):
+        return ', '.join(obj.attribut_values.attributValue)
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
@@ -84,7 +88,7 @@ class AttributAdmin(admin.ModelAdmin):
 @admin.register(AttributValue)
 class AttributValueAdmin(admin.ModelAdmin):
     list_display = ('attribut', 'attributsValue', 'attributsValueSortOrder')
-    list_editable = ('attributsValue', 'attributsValueSortOrder')
+    list_editable = ('attributsValueSortOrder', )
     search_fields = ('attribut',)
     list_filter = ('attribut',)
 
@@ -94,13 +98,13 @@ class ProductImagesAdmin(admin.ModelAdmin):
     list_display = ('product', 'image_of_product', 'image',)
     # list_editable = ('pictographName',)
     search_fields = ('product',)
-    list_filter = ('product',)
+    #list_filter = ('product',)
 
     @admin.display(description='Изображение')
     def image_of_product(self, obj):
         if obj.image:
             return mark_safe(
-                f'<img src={obj.image.url} width="80" height="60">'
+                f'<img src={obj.image.url} width="80" height="80">'
             )
 
 
