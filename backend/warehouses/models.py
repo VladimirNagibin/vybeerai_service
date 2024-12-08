@@ -132,7 +132,7 @@ class Warehouse(models.Model):
     class Meta:
         ordering = ('warehouseName',)
         verbose_name = 'склад'
-        verbose_name_plural = '\u200B\u200BСклады'
+        verbose_name_plural = 'Склады'
 
     def __str__(self):
         return self.warehouseName[:PRESENTATION_MAX_LENGTH]
@@ -163,7 +163,7 @@ class ProductStock(models.Model):
     class Meta:
         ordering = ('warehouse', 'product')
         verbose_name = 'остатки товаров на складах'
-        verbose_name_plural = 'Остатки товаров на складах'
+        verbose_name_plural = '\u200B\u200BОстатки товаров на складах'
         constraints = (
             models.UniqueConstraint(
                 fields=('warehouse', 'product'),
