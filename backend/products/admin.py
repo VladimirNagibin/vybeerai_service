@@ -42,6 +42,7 @@ class ProductAdmin(admin.ModelAdmin):
         'attributs',
         'images',
         'volume',
+        'price',
         'active',
         'description',
         'group',
@@ -58,6 +59,10 @@ class ProductAdmin(admin.ModelAdmin):
     def attributs(self, obj):
         return ', '.join([str(attr.attributValue)
                           for attr in obj.attribut_values.all()])
+
+    @admin.display(description='Цена')
+    def price(self, obj):
+        return obj.prices.first().price
 
     @admin.display(description='Изображения')
     def images(self, obj):
