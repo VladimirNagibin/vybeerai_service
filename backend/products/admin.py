@@ -43,8 +43,9 @@ class ProductAdmin(admin.ModelAdmin):
         'images',
         'volume',
         'price',
-        'active',
+        # 'stocks',
         'description',
+        'active',
         'group',
         'codeBitrix',
         'package',
@@ -62,7 +63,11 @@ class ProductAdmin(admin.ModelAdmin):
 
     @admin.display(description='Цена')
     def price(self, obj):
-        return obj.prices.first().price
+        try:
+            price = obj.prices.all().first().price
+        except Exception:
+            price = 0
+        return price
 
     @admin.display(description='Изображения')
     def images(self, obj):
