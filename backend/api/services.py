@@ -1,6 +1,7 @@
 import logging
 import os
 
+from django.db.models import Q
 from dotenv import load_dotenv
 from rest_framework.exceptions import ValidationError
 
@@ -114,7 +115,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             })
     elif way == 'outletWarehouses':
         for outlet in Outlet.objects.filter(
-            status=TypeStatusCompany.CONFIRMED
+            Q(
+                status=TypeStatusCompany.CONFIRMED
+            ) | Q(status=TypeStatusCompany.COMPLIT)
         ):
             data.append({
                 'outletExternalCode': outlet.outletExternalCode,
@@ -125,7 +128,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             })
     elif way == 'operations':
         for operation in OperationOutlet.objects.filter(
-            outlet__status=TypeStatusCompany.CONFIRMED
+            Q(
+                outlet__status=TypeStatusCompany.CONFIRMED
+            ) | Q(outlet__status=TypeStatusCompany.COMPLIT)
         ):
             data.append({
                 'outletExternalCode': operation
@@ -148,7 +153,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
             })
     elif way == 'deliveryDates':
         for delivery_date in DeliveryDate.objects.filter(
-            outlet__status=TypeStatusCompany.CONFIRMED
+            Q(
+                outlet__status=TypeStatusCompany.CONFIRMED
+            ) | Q(outlet__status=TypeStatusCompany.COMPLIT)
         ):
             for deliv_date in delivery_date.deliveryDate.split(', '):
                 data.append({
@@ -166,7 +173,9 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
                 })
     elif way == 'outletPayForms':
         for pay_forms in OutletPayForm.objects.filter(
-            outlet__status=TypeStatusCompany.CONFIRMED
+            Q(
+                outlet__status=TypeStatusCompany.CONFIRMED
+            ) | Q(outlet__status=TypeStatusCompany.COMPLIT)
         ):
             data.append({
                 'outletExternalCode': pay_forms

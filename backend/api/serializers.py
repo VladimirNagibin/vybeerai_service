@@ -9,7 +9,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from orders.models import (Operation, Order, OrderDetail,
                            PayForm, PriceList)
 from products.models import GroupProduct, Package, Pictograph, Product
-from warehouses.models import ProductStock, Warehouse
+from warehouses.models import Outlet, ProductStock, Warehouse
 
 User = get_user_model()
 
@@ -262,6 +262,17 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = OrderDetail
         fields = ('orderNo', 'productExternalCode', 'price', 'basePrice',
                   'qty', 'vat', 'discount')
+
+
+class OutletSlugSerializer(serializers.Serializer):
+    outletExternalCode =  serializers.CharField() #SlugRelatedField(
+        #queryset=Outlet.objects.all(),
+        #slug_field='outletExternalCode',
+        #many=True,
+    #)
+
+    class Meta:
+        fields = ('outletExternalCode',)
 
 
 #class CompanySerializer(serializers.ModelSerializer):

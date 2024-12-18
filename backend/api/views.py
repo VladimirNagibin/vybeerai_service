@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -6,12 +7,13 @@ from rest_framework.response import Response
 from .exceptions import (NotFoundDataException, NotFoundEndpointException,
                          TokenReceivingException, SendRequestException)
 from .send_requests import SendRequest
-from .serializers import (CheckProductsSerializer, PriceListSerializer,
-                          PricesSerializer, ProductStockSerializer,
-                          StocksSerializer, UserTokenCreationSerializer)
+from .serializers import (CheckProductsSerializer, OutletSlugSerializer,
+                          PriceListSerializer, PricesSerializer,
+                          ProductStockSerializer, StocksSerializer,
+                          UserTokenCreationSerializer)
 from .services import create_orders, get_endpoint_data
 from orders.models import PriceList
-from warehouses.models import ProductStock
+from warehouses.models import Outlet, ProductStock, TypeStatusCompany
 
 
 @api_view(('POST', ))
@@ -63,6 +65,14 @@ def get_token(request):
     serializer.is_valid(raise_exception=True)
     token = serializer.save()
     return Response(f'{token}', status=status.HTTP_200_OK)
+
+
+@api_view(('GET', ))
+def get_outlet_not_complit(request):
+    """Вью для получение тт у которых не отправлены данные в выбирай."""
+    outlets = Outlet.objects.filter(status=TypeStatusCompany.CONFIRMED)
+    serializer = OutletSlugSerializer(outlets, many=True)
+    return Response(serializer.data)
 
 
 class ProductStockViewSet(viewsets.ModelViewSet):
