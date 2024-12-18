@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -14,6 +16,8 @@ from .serializers import (CheckProductsSerializer, OutletSlugSerializer,
 from .services import create_orders, get_endpoint_data
 from orders.models import PriceList
 from warehouses.models import Outlet, ProductStock, TypeStatusCompany
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(('POST', ))
@@ -72,6 +76,18 @@ def get_outlet_not_complit(request):
     """Вью для получение тт у которых не отправлены данные в выбирай."""
     outlets = Outlet.objects.filter(status=TypeStatusCompany.CONFIRMED)
     serializer = OutletSlugSerializer(outlets, many=True)
+    return Response(serializer.data)
+
+
+@api_view(('POST', ))
+def set_outlet_not_complit(request):
+    """Вью для установки в тт статуса выгружен в выбирай."""
+    serializer = OutletSlugSerializer(data=request.data, many=True)
+    serializer.is_valid(raise_exception=True)
+    for data in serializer.data:
+        Outlet.objects.filter(
+            outletExternalCode=data['outletExternalCode']
+        ).update(status=TypeStatusCompany.COMPLIT)
     return Response(serializer.data)
 
 

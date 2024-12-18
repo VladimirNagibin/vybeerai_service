@@ -13,6 +13,8 @@ from warehouses.models import Outlet, ProductStock, Warehouse
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
 
 class UserTokenCreationSerializer(serializers.Serializer):
     """Сериализатор для получения токена пользователем."""
@@ -265,14 +267,21 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OutletSlugSerializer(serializers.Serializer):
-    outletExternalCode =  serializers.CharField() #SlugRelatedField(
+    outletExternalCode = serializers.CharField() #SlugRelatedField(  # 
         #queryset=Outlet.objects.all(),
         #slug_field='outletExternalCode',
-        #many=True,
     #)
 
     class Meta:
+        #model = Outlet
         fields = ('outletExternalCode',)
+
+    def create(self, validated_data):
+        logger.info(validated_data)
+        #user = get_object_or_404(User, username=self.data.get('username'))
+        #if not user.check_password(validated_data.get('password')):
+        #    raise serializers.ValidationError('Неверное имя или пароль')
+        #return str(AccessToken.for_user(user))
 
 
 #class CompanySerializer(serializers.ModelSerializer):
