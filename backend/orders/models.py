@@ -239,7 +239,7 @@ class TypeStatusOrders(models.IntegerChoices):
     CONFIRMED = 3, 'Подтвержден в Выбирай'
     SHIPPED = 4, 'Отгружен'
     SHIPPED_VYBEERAI = 5, 'Отгружен в Выбирай'
-
+    NOT_COMPLIT = 6, 'Выгружен не полностью'
 
 class Order(models.Model):
     orderNo = models.CharField(

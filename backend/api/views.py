@@ -17,41 +17,42 @@ from warehouses.models import ProductStock
 @api_view(('POST', ))
 def send_request(request, way):
     """Вью для отправки запроса."""
-    error = ''
     try:
         endpoint, data = get_endpoint_data(way)
         # status = 2 - change or insert / 9 - delete
-    except NotFoundEndpointException as e:
-        return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-    except NotFoundDataException as e:
+    except (NotFoundEndpointException, NotFoundDataException) as e:
         return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
     try:
         if way == 'orders':
             response = SendRequest.send_request_token(endpoint, data,
                                                       http_method='get')
             if response['countOrder'] > 0:
-                create_orders(response)
+                result = create_orders(response)
+                if result:
+                    response['result'] = result
+                    return Response(
+                        response, status=status.HTTP_400_BAD_REQUEST
+                    )
         elif way == 'send_orders_b24':
             response = SendRequest.send_orders_b24()
         elif way == 'set_real_code':
+            result = {}
             for dat in data:
                 respon = SendRequest.send_request_token(endpoint, dat)
-            response = respon  # adding ========================================
+                result[dat['realExternalCode']] = respon
+            response = result
         elif way == 'del_real_code':
+            result = {}
             for dat in data:
                 respon = SendRequest.send_request_token(endpoint, dat)
-            response = respon  # adding ========================================
+                result[dat['externalCode']] = respon
+            response = result
         else:
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange
         return Response(response, status=status.HTTP_200_OK)
-    except TokenReceivingException as e:
-        error = e
-    except SendRequestException as e:
-        error = e
-    except Exception as e:
-        error = e
-    return Response(str(error), status=status.HTTP_400_BAD_REQUEST)
+    except (TokenReceivingException, SendRequestException, Exception) as e:
+        return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(('POST', ))

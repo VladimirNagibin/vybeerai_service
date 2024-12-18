@@ -222,6 +222,7 @@ class OrderSerializer(serializers.ModelSerializer):
     )
     creationDate = serializers.CharField()
     deliveryDate = serializers.CharField()
+    status = serializers.IntegerField(required=False)
 
     class Meta:
         model = Order
@@ -229,7 +230,7 @@ class OrderSerializer(serializers.ModelSerializer):
                   'payFormExternalCode', 'orderTypeExternalCode',
                   'deliveryDate', 'totalSum', 'vatSum', 'discount',
                   'creationDate', 'operationExternalCode', 'deliveryAddress',
-                  'comment', 'isReturn', 'olCardType')
+                  'comment', 'isReturn', 'olCardType', 'status')
 
     @staticmethod
     def update_format_date(value):

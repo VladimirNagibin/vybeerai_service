@@ -2,6 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
+from rest_framework.exceptions import ValidationError
 
 from .exceptions import NotFoundDataException, NotFoundEndpointException
 from .serializers import (OrderDetailSerializer, OrderSerializer)
@@ -16,9 +17,7 @@ load_dotenv()
 
 SUPPLIER_ID = os.getenv('SUPPLIER_ID')
 
-
 STATUS_CHANGE_OR_UPDATE = 2
-
 
 ENDPOINTS = {
     'productWarehouses': '/Warehouse/productWarehouses/',
@@ -38,6 +37,7 @@ ENDPOINTS = {
     'del_real_code': '/close-outlet',
 }
 
+logger = logging.getLogger(__name__)
 
 def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
     """Get data for request."""
@@ -212,6 +212,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         orders = Order.objects.filter(status=TypeStatusOrders.SEND_B24)
         for order in orders:
             data.append({'orderNo': order.orderNo})
+        return data    
     elif way == 'set_real_code':
         companies = Outlet.objects.filter(
             status=TypeStatusCompany.RECEIVED
@@ -219,12 +220,14 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for company in companies:
             data.append({'potentialExternalCode': company.tempOutletCode,
                          'realExternalCode': company.outletExternalCode})
+        return data
     elif way == 'del_real_code':
         companies = Outlet.objects.filter(
             status=TypeStatusCompany.CANCEL
         )
         for company in companies:
             data.append({'externalCode': company.outletExternalCode})
+        return data
     if data:
         return data
     raise NotFoundDataException(f'Not found data for {way}')
@@ -243,70 +246,94 @@ def get_endpoint_data(way, status=STATUS_CHANGE_OR_UPDATE):
 
 def create_orders(data):
     orders = data['orders']
+    result = {}
     for order in orders:
         order_no = order['orderNo']
         order_doc = Order.objects.filter(orderNo=order_no)
         if order_doc:
-            ser_order = OrderSerializer(order_doc[0], data=order)
+            ser_order = OrderSerializer(
+                order_doc[0],
+                data=(order | {'status': TypeStatusOrders.RECEIVED})
+            )
         else:
             ser_order = OrderSerializer(data=order)
-        ser_order.is_valid(raise_exception=True)
+        try:
+            ser_order.is_valid(raise_exception=True)
+        except ValidationError:
+            result[order_no] = 'Exception created order'
+            continue
         order_instance = ser_order.save()
         products = order['details']
-        for product in products:
-            order_no = product['orderNo']
-            product_no = product['productExternalCode']
-            product_doc = OrderDetail.objects.filter(
-                order=Order.objects.get(orderNo=order_no),
-                product=Product.objects.get(productExternalCode=product_no)
-            )
-            if product_doc:
-                ser_product = OrderDetailSerializer(product_doc[0],
-                                                    data=product)
-            else:
-                ser_product = OrderDetailSerializer(data=product)
-            ser_product.is_valid(raise_exception=True)
-            ser_product.save()
-        outlet_data = order.get('outletData')
-        if outlet_data:
-            temp_outlet_code = outlet_data['tempOutletCode']
-            legal_name = outlet_data.get('legalName', '')
-            delivery_address = outlet_data.get('deliveryAddress', '')
-            contact_person = outlet_data.get('contactPerson', '')
-            outlet = Outlet(
-                outletExternalCode=temp_outlet_code,
-                outletName=f'TT {legal_name}',
-                warehouse=Warehouse.objects.get(
-                    warehouseExternalCode=order['warehouseExternalCode']
-                ),
-                inn=outlet_data['inn'],
-                legalName=legal_name,
-                tempOutletCode=temp_outlet_code,
-                deliveryAddress=delivery_address,
-                phone=outlet_data['phone'],
-                contactPerson=contact_person,
-            )
-            outlet.save()
-            id = outlet.pk
-            outlet.outletExternalCode = f'TTVY00{id}'
-            outlet.save()
-            OperationOutlet.objects.create(
-                operation=Operation.objects.get(pk=3), outlet=outlet
-            )
-            DeliveryDate.objects.create(outlet=outlet,
-                                        deliveryDate='Пн, Вт, Ср, Чт, Пт',
-                                        deadLine='19:00', minSum=3000.0)
-            OutletPayForm.objects.create(outlet=outlet,
-                                         payForm=PayForm.objects.get(pk=1))
-            order_instance.outlet = outlet
-            order_instance.save()
-        else:
-            try:
-                outlet = Outlet.objects.filter(
-                    outletExternalCode=order['outletExternalCode']
+        try:
+            for product in products:
+                order_no = product['orderNo']
+                product_no = product['productExternalCode']
+                product_doc = OrderDetail.objects.filter(
+                    order=Order.objects.get(orderNo=order_no),
+                    product=Product.objects.get(productExternalCode=product_no)
                 )
-                if outlet:
-                    order_instance.outlet = outlet[0]
-                    order_instance.save()
-            except Exception:
-                ...
+                if product_doc:
+                    ser_product = OrderDetailSerializer(product_doc[0],
+                                                        data=product)
+                else:
+                    ser_product = OrderDetailSerializer(data=product)
+                ser_product.is_valid(raise_exception=True)
+                ser_product.save()
+        except (ValidationError, KeyError):
+            order_instance.status = TypeStatusOrders.NOT_COMPLIT
+            order_instance.save()
+            result[order_no] = 'Exception created products'
+            continue
+        try:
+            if outlet_data := order.get('outletData'):
+                temp_outlet_code = outlet_data['tempOutletCode']
+                legal_name = outlet_data.get('legalName', '')
+                delivery_address = outlet_data.get('deliveryAddress', '')
+                contact_person = outlet_data.get('contactPerson', '')
+                outlet = Outlet(
+                    outletExternalCode=temp_outlet_code,
+                    outletName=f'TT {legal_name}',
+                    warehouse=Warehouse.objects.get(
+                        warehouseExternalCode=order['warehouseExternalCode']
+                    ),
+                    inn=outlet_data['inn'],
+                    legalName=legal_name,
+                    tempOutletCode=temp_outlet_code,
+                    deliveryAddress=delivery_address,
+                    phone=outlet_data['phone'],
+                    contactPerson=contact_person,
+                )
+                outlet.save()
+                id = outlet.pk
+                outlet.outletExternalCode = f'TTVY00{id}'
+                outlet.save()
+                OperationOutlet.objects.create(
+                    operation=Operation.objects.get(pk=3), outlet=outlet
+                )
+                DeliveryDate.objects.create(outlet=outlet,
+                                            deliveryDate='Пн, Вт, Ср, Чт, Пт',
+                                            deadLine='19:00', minSum=3000.0)
+                OutletPayForm.objects.create(outlet=outlet,
+                                             payForm=PayForm.objects.get(pk=1))
+                order_instance.outlet = outlet
+                order_instance.save()
+            else:
+                try:
+                    outlet = Outlet.objects.filter(
+                        outletExternalCode=order['outletExternalCode']
+                    )
+                    if outlet:
+                        order_instance.outlet = outlet[0]
+                        order_instance.save()
+                except Exception as e:
+                    raise e
+        except ValidationError:
+            order_instance.status = TypeStatusOrders.NOT_COMPLIT
+            order_instance.save()
+            result[order_no] = 'Exception created outlet'
+        except Exception as e:
+            order_instance.status = TypeStatusOrders.NOT_COMPLIT
+            order_instance.save()
+            ex = 'Exception created outlet'
+            result[order_no] = f'{ex}: {e}'
+    return result

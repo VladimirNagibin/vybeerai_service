@@ -11,6 +11,8 @@ services:
       - pg_data:/var/lib/postgresql/data
   backend:
     build: ./backend/
+    #volumes:
+    #  - ./backend/:/app
     env_file: .env
     volumes:
       - static:/static

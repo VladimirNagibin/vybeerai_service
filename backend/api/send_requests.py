@@ -96,6 +96,8 @@ class SendRequest:
         if http_method == 'post':
             headers = HEADERS | headers
             if endpoint == '/SyncOrder/syncOrders':
+                if not data:
+                    return 'There are no Orders to send to Vybeerai'
                 params = {
                     'supplierId': supplierId,
                     'orders': data
@@ -214,14 +216,22 @@ class SendRequest:
                                 contact_person, phone
                             )
                             return company_code_B24
-                        raise RequestB24Exception('bad request B24 add company')
-            raise RequestB24Exception('bad request B24 get company by inn')
-        raise RequestB24Exception('bad request B24 get company by inn')
+                        raise RequestB24Exception(
+                            f'INN: {inn}. bad request B24 add company'
+                        )
+            raise RequestB24Exception(
+                f'INN: {inn}. bad request B24 get company by inn'
+            )
+        raise RequestB24Exception(
+            f'INN: {inn}. bad request B24 get company by inn'
+        )
 
     @staticmethod
     def send_orders_b24():
+        result = {}
         orders = Order.objects.filter(status=TypeStatusOrders.RECEIVED)
         for order in orders:
+            order_no = order.orderNo
             if order.code_B24 is None or order.code_B24 == 0:
                 customer = order.outlet
                 if customer:
@@ -240,11 +250,15 @@ class SendRequest:
                     comments += f'{order.comment}'
                     inn = customer.inn
                     legal_name = customer.legalName
-                    phone = customer.phone
-                    code_B24_B24 = SendRequest.check_company(
-                        inn, legal_name, code_B24, delivery_address,
-                        contact_person, phone
-                    )
+                    try:
+                        code_B24_B24 = SendRequest.check_company(
+                            inn, legal_name, code_B24, delivery_address,
+                            contact_person, phone
+                        )
+                    except (RequestB24Exception, Exception) as e:
+                        raise SendRequestException(
+                            f'Order No: {order_no}. Don"t create company. {e}'
+                        )
                     if code_B24_B24 is None:
                         comments = ('В Битриксе существует больше '
                                     f'одной компании с ИНН {inn}. '
@@ -255,7 +269,7 @@ class SendRequest:
                                     f'но ИНН {inn} не совпадает. '
                                     'Выберите компанию вручную.')
                         + comments
-                rq_text = (f'fields[TITLE]=Выбирай заказ №{order.orderNo}'
+                rq_text = (f'fields[TITLE]=Выбирай заказ №{order_no}'
                            f'&fields[TYPE_ID]={TYPE_VYBEERAI}'
                            '&fields[CATEGORY_ID]=0'
                            '&fields[STAGE_ID]=NEW'
@@ -303,17 +317,35 @@ class SendRequest:
                             #  f'&rows[{i}][DISCOUNT_SUM]=0]'
                             f'&rows[{i}][CUSTOMIZED]=Y')
                         i += 1
-                    response_product = SendRequest.send_request_method(
-                        f'{ENDPOINT_SEND_ORDER_PRODUCT}?{rq_text_product}',
-                        {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
-                        headers={},
-                        http_method='get',
-                    )
-                    status_code_product = response_product.status_code
-                    if status_code_product == status.HTTP_200_OK:
-                        order.code_B24 = order_code_B24
-                        order.status = TypeStatusOrders.SEND_B24
-                        order.save()
+                    if i > 1:
+                        response_product = SendRequest.send_request_method(
+                            f'{ENDPOINT_SEND_ORDER_PRODUCT}?{rq_text_product}',
+                            {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                            headers={},
+                            http_method='get',
+                        )
+                        status_code_product = response_product.status_code
+                        if status_code_product == status.HTTP_200_OK:
+                            order.code_B24 = order_code_B24
+                            order.status = TypeStatusOrders.SEND_B24
+                            order.save()
+                            result[order_no] = 'success'
+                        else:
+                            SendRequest.send_request_method(
+                                f'{ENDPOINT_DEL_ORDER}?ID={order_code_B24}',
+                                {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                                headers={},
+                                http_method='get',
+                            )
+                            error_log = (f'Order No: {order_no}. Error send '
+                                         'request B24 Order '
+                                         'product. Status code: '
+                                         f'`{status_code}`. {response.json()}')
+                            SendRequest.logger.critical(error_log)
+                            SendMessage.send_message(error_log)
+                            raise SendRequestException(
+                                f'Order No: {order_no}. {error_log}'
+                            )
                     else:
                         SendRequest.send_request_method(
                             f'{ENDPOINT_DEL_ORDER}?ID={order_code_B24}',
@@ -321,25 +353,19 @@ class SendRequest:
                             headers={},
                             http_method='get',
                         )
-                        error_log = (f'Error send request B24 Order product. '
-                                     'Status code: '
-                                     f'`{status_code}`. {response.json()}')
-                        SendRequest.logger.critical(error_log)
-                        SendMessage.send_message(error_log)
-                        raise SendRequestException(
-                            f'Error send request B24 {status_code}'
-                        )
+                        raise SendRequestException(f'Order No: {order_no}. '
+                                                   'No products in order')
                 else:
-                    error_log = (f'Error send request B24 Order. Status code: '
+                    error_log = (f'Order No: {order_no}. Error send request '
+                                 'B24 Order. Status code: '
                                  f'`{status_code}`. {response.json()}')
                     SendRequest.logger.critical(error_log)
                     SendMessage.send_message(error_log)
-                    raise SendRequestException(
-                        f'Error send request B24 {status_code}'
-                    )
+                    raise SendRequestException(f'Order No: {order_no}. '
+                                               f'{error_log}')
             else:
                 raise SendRequestException(
-                    f'Order code B24 <{order.code_B24}> exist, '
-                    'but status not send'
+                    f'Order No: {order_no}. Order code B24 <{order.code_B24}> '
+                    'exist, but status not send'
                 )
-        return 'Orders load'  # Add info about orders
+        return result
