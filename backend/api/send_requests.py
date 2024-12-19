@@ -27,7 +27,7 @@ PROCESSING_TYPE_ALL = 0
 HEADERS = {'Content-type': 'application/json'}
 PORTAL_B24 = os.getenv('PORTAL_B24')
 TOKEN_B24 = os.getenv('TOKEN_B24')
-USER_B24 = os.getenv('USER_B24')
+USER_B24 = 121  #os.getenv('USER_B24')
 SHIPPING_COMPANY = os.getenv('SHIPPING_COMPANY')
 TYPE_VYBEERAI = 1  # Add type marketplace
 ENDPOINT_SEND_ORDER = 'crm.deal.add'
@@ -281,6 +281,7 @@ class SendRequest:
                            f'&fields[COMMENTS]={comments}')
                 if code_B24_B24:
                     rq_text += f'&fields[COMPANY_ID]={code_B24_B24}'
+                    # Read B24 for company ==============================================
                 # f'&fields[BEGINDATE]={str(.creationDate).replace(" ", "T")}'
                 # f'&fields[CLOSEDATE]={str(.deliveryDate).replace(" ", "T")}'
                 #  '&fields[COMPANY_ID]=0&fields[CONTACT_ID]=0'
