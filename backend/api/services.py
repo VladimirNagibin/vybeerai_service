@@ -224,7 +224,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         return data    
     elif way == 'set_real_code':
         companies = Outlet.objects.filter(
-            status=TypeStatusCompany.RECEIVED
+            status=TypeStatusCompany.CODE_RECEIVED
         )
         for company in companies:
             data.append({'potentialExternalCode': company.tempOutletCode,
@@ -288,10 +288,10 @@ def create_orders(data):
                     ser_product = OrderDetailSerializer(data=product)
                 ser_product.is_valid(raise_exception=True)
                 ser_product.save()
-        except (ValidationError, KeyError):
+        except (ValidationError, KeyError, Exception) as e:
             order_instance.status = TypeStatusOrders.NOT_COMPLIT
             order_instance.save()
-            result[order_no] = 'Exception created products'
+            result[order_no] = f'Exception created products {e}'
             continue
         try:
             if outlet_data := order.get('outletData'):
@@ -299,31 +299,47 @@ def create_orders(data):
                 legal_name = outlet_data.get('legalName', '')
                 delivery_address = outlet_data.get('deliveryAddress', '')
                 contact_person = outlet_data.get('contactPerson', '')
-                outlet = Outlet(
-                    outletExternalCode=temp_outlet_code,
-                    outletName=f'TT {legal_name}',
-                    warehouse=Warehouse.objects.get(
-                        warehouseExternalCode=order['warehouseExternalCode']
-                    ),
-                    inn=outlet_data['inn'],
-                    legalName=legal_name,
-                    tempOutletCode=temp_outlet_code,
-                    deliveryAddress=delivery_address,
-                    phone=outlet_data['phone'],
-                    contactPerson=contact_person,
+                inn = outlet_data['inn']
+                outlets = Outlet.objects.filter(
+                    Q(inn=inn) & Q(tempOutletCode=temp_outlet_code)
                 )
-                outlet.save()
-                id = outlet.pk
-                outlet.outletExternalCode = f'TTVY00{id}'
-                outlet.save()
-                OperationOutlet.objects.create(
+                if outlets:
+                    outlet = Outlet.objects.get(
+                        inn=inn, tempOutletCode=temp_outlet_code
+                    )
+                else:
+                    outlet = Outlet(
+                        outletExternalCode=temp_outlet_code,
+                        outletName=f'TT {legal_name}',
+                        warehouse=Warehouse.objects.get(
+                            warehouseExternalCode=order['warehouseExternalCode']
+                        ),
+                        inn=inn,
+                        legalName=legal_name,
+                        tempOutletCode=temp_outlet_code,
+                        deliveryAddress=delivery_address,
+                        phone=outlet_data['phone'],
+                        contactPerson=contact_person,
+                    )
+                    outlet.save()
+                if outlet.status == TypeStatusCompany.RECEIVED:
+                    id = outlet.pk
+                    outlet.outletExternalCode = f'TTVY00{id}'
+                    outlet.status = TypeStatusCompany.CODE_RECEIVED
+                    outlet.save()
+                OperationOutlet.objects.get_or_create(
                     operation=Operation.objects.get(pk=3), outlet=outlet
                 )
-                DeliveryDate.objects.create(outlet=outlet,
-                                            deliveryDate='Пн, Вт, Ср, Чт, Пт',
-                                            deadLine='19:00', minSum=3000.0)
-                OutletPayForm.objects.create(outlet=outlet,
-                                             payForm=PayForm.objects.get(pk=1))
+                DeliveryDate.objects.get_or_create(
+                    outlet=outlet,
+                    deliveryDate='Пн, Вт, Ср, Чт, Пт',
+                    deadLine='19:00',
+                    minSum=3000.0
+                )
+                OutletPayForm.objects.get_or_create(
+                    outlet=outlet,
+                    payForm=PayForm.objects.get(pk=1)
+                )
                 order_instance.outlet = outlet
                 order_instance.save()
             else:
