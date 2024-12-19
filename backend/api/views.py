@@ -148,3 +148,4 @@ class PriceListViewSet(viewsets.ModelViewSet):
             serializer.data,
             status=status.HTTP_200_OK
         )
+ 
