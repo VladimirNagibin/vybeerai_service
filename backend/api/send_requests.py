@@ -148,8 +148,145 @@ class SendRequest:
         raise SendRequestException(f'{error_log}')
 
     @staticmethod
-    def check_company_field(code_B24, delivery_address, contact_person, phone):
-        ...
+    def send_request_B24(endpoint, param):
+        try:
+            response = SendRequest.send_request_method(
+                        f'{endpoint}?{param}',
+                        {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
+                        headers={},
+                        http_method='get',
+            )
+        except Exception as e:
+            return {'error': 'exception_request', 'error_description': e}
+        return response.json()
+
+    @staticmethod
+    def normalization_phone(phone):
+        phone = phone.strip()
+        phone = phone.removeprefix('+')
+        phone = phone.strip()
+        phone = phone.removeprefix('7')
+        phone = phone.removeprefix('8')
+        phone = phone.replace(' ', '')
+        phone = phone.replace('(', '')
+        phone = phone.replace(')', '')
+        phone = phone.replace('-', '')
+        return phone
+
+    @staticmethod
+    def check_company_field(
+        inn, legal_name, code_B24, delivery_address, contact_person,
+        phone_company
+    ):
+        upd_company_result = {}
+        # Check phone
+        phone_upd = True
+        i = 0
+        endpoint = 'crm.company.get'
+        param = f'id={code_B24}'
+        response = SendRequest.send_request_B24(endpoint, param)
+        if result := response.get('result'):
+            if result['HAS_PHONE'] == 'Y':
+                phones = result['PHONE']
+                i = len(phones)
+                phones_val = [
+                    SendRequest.normalization_phone(phone['VALUE']) for phone in phones
+                ]
+                if SendRequest.normalization_phone(phone_company) in phones_val:
+                    phone_upd = False
+        if phone_upd:
+            param += (f'&fields[PHONE][{i}][VALUE]={phone_company}'
+                      f'&fields[PHONE][{i}][VALUE_TYPE]=WORK')
+            response = SendRequest.send_request_B24(
+                'crm.company.update', param
+            )
+            if response.get('error'):  # result = 'True' in success
+                upd_company_result['upd_phone'] = 'error'
+
+        # Check address
+        if delivery_address:
+            address_upd = True
+            address_ids = {}
+            ids_requisites = []
+            endpoint = 'crm.requisite.list'
+            param = f'filter[ENTITY_ID]={code_B24}&select[0]=ID'
+            response = SendRequest.send_request_B24(endpoint, param)
+            if result := response.get('result'):
+                ids_requisites = [req['ID'] for req in result]
+                for id_req in ids_requisites:
+                    endpoint = 'crm.address.list'
+                    param = (f'filter[ENTITY_ID]={id_req}&'
+                             'filter[ENTITY_TYPE_ID]=8&'
+                             'filter[TYPE_ID]=11&select[0]=ADDRESS_1')
+                    response = SendRequest.send_request_B24(endpoint, param)
+                    if result := response.get('result'):
+                        address_ids[id_req] = result
+                        address_val = [
+                            address['ADDRESS_1'] for address in result
+                        ]
+                        if delivery_address in address_val:
+                            address_upd = False
+                            break
+            if address_upd:
+                endpoint = 'crm.address.add'
+                id_req = None
+                if ids_requisites:
+                    id_req = ids_requisites[0]
+                    address_deliver_B24 = address_ids.get(id_req)
+                    if address_deliver_B24:
+                        endpoint = 'crm.address.update'
+                else:
+                    # create requisite
+                    legal_name = legal_name if legal_name else 'компании'
+                    rq_req_text = (
+                        f'fields[ENTITY_TYPE_ID]=4'
+                        f'&fields[ENTITY_ID]={code_B24}'
+                        f'&fields[NAME]=Реквизиты {legal_name}'
+                        f'&fields[RQ_INN]={inn}'
+                    )
+                    if int(inn) > 10000000000:  # inn businessman
+                        rq_req_text += '&fields[PRESET_ID]=3'
+                    else:  # juridical person
+                        rq_req_text += '&fields[PRESET_ID]=1'
+                    response = SendRequest.send_request_B24(
+                        ENDPOINT_ADD_CONPANY_REQUIS, rq_req_text
+                    )
+                    id_req = response.get('result')
+                if id_req:
+                    param = (f'fields[TYPE_ID]=11&fields[ENTITY_TYPE_ID]=8'
+                             f'&fields[ENTITY_ID]={id_req}'
+                             f'&fields[ADDRESS_1]={delivery_address}')
+                    response = SendRequest.send_request_B24(endpoint, param)
+                    if response.get('error'):  # result = 'True' in success
+                        upd_company_result['upd_address'] = 'error'
+                else:
+                    upd_company_result['upd_address'] = 'error'
+
+        # Check contact
+        if contact_person:
+            contact_upd = True
+            endpoint = 'crm.company.contact.items.get'
+            param = f'id={code_B24}'
+            response = SendRequest.send_request_B24(endpoint, param)
+            if result := response.get('result'):
+                ids = [res['CONTACT_ID'] for res in result]
+                for id in ids:
+                    endpoint = 'crm.contact.get'
+                    param = f'id={id}'
+                    response = SendRequest.send_request_B24(endpoint, param)
+                    if result := response.get('result'):
+                        if result['NAME'] == contact_person:
+                            contact_upd = False
+                            break
+        if contact_upd:
+            param = (f'fields[ASSIGNED_BY_ID]={USER_B24}&'
+                     f'fields[COMPANY_IDS][0]={code_B24}&'
+                     f'fields[NAME]={contact_person}')
+            response = SendRequest.send_request_B24('crm.contact.add', param)
+            if response.get('error'):  # result = 'True' in success
+                upd_company_result['upd_contact'] = 'error'
+        return upd_company_result
+
 
     @staticmethod
     def check_company(inn, legal_name, code_B24, delivery_address,
@@ -169,7 +306,7 @@ class SendRequest:
                 if code_B24:
                     if code_B24 in inns:
                         SendRequest.check_company_field(
-                            code_B24, delivery_address, contact_person, phone
+                            inn, legal_name, code_B24, delivery_address, contact_person, phone
                         )
                         return code_B24
                     return 0
@@ -177,13 +314,14 @@ class SendRequest:
                     if len(result) == 1:
                         code_B24_B24 = result[0]['ENTITY_ID']
                         SendRequest.check_company_field(
-                            code_B24_B24, delivery_address, contact_person,
+                            inn, legal_name, code_B24_B24, delivery_address, contact_person,
                             phone
                         )
                         return code_B24_B24
                     elif len(result) > 1:
                         return None
                     else:
+                        legal_name = legal_name if legal_name else f'Компания {inn}'
                         rq_text = (f'fields[ASSIGNED_BY_ID]={USER_B24}'
                                    f'&fields[TITLE]={legal_name}')
                         response = SendRequest.send_request_method(
@@ -195,6 +333,9 @@ class SendRequest:
                         status_code = response.status_code
                         if status_code == status.HTTP_200_OK:
                             company_code_B24 = response.json()['result']
+                            legal_name = (
+                                legal_name if legal_name else 'компании'
+                            )
                             rq_req_text = (
                                 f'fields[ENTITY_TYPE_ID]=4'
                                 f'&fields[ENTITY_ID]={company_code_B24}'
@@ -212,8 +353,8 @@ class SendRequest:
                                 http_method='get',
                             )
                             SendRequest.check_company_field(
-                                company_code_B24, delivery_address,
-                                contact_person, phone
+                                inn, legal_name, company_code_B24,
+                                delivery_address, contact_person, phone
                             )
                             return company_code_B24
                         raise RequestB24Exception(
@@ -281,7 +422,9 @@ class SendRequest:
                            f'&fields[COMMENTS]={comments}')
                 if code_B24_B24:
                     rq_text += f'&fields[COMPANY_ID]={code_B24_B24}'
-                    # Read B24 for company ==============================================
+                    outlet = Outlet.objects.get(pk=customer.id)
+                    outlet.code_B24 = code_B24_B24
+                    outlet.save()
                 # f'&fields[BEGINDATE]={str(.creationDate).replace(" ", "T")}'
                 # f'&fields[CLOSEDATE]={str(.deliveryDate).replace(" ", "T")}'
                 #  '&fields[COMPANY_ID]=0&fields[CONTACT_ID]=0'
