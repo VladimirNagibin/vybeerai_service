@@ -303,6 +303,7 @@ class Order(models.Model):
     comment = models.CharField(
         'комментарий',
         max_length=COMMENT_MAX_LENGHT,
+        blank=True,
     )
     status = models.PositiveSmallIntegerField(
         'Статус',

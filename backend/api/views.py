@@ -32,6 +32,8 @@ def send_request(request, way):
         if way == 'orders':
             response = SendRequest.send_request_token(endpoint, data,
                                                       http_method='get')
+            #response = {"result":{"7":"Exception created order"},"countOrder":1,"orders":[{"orderNo":"7","mainOrderNo":"7","outletExternalCode":"TTEl0000003","customerExternalCode":"1","payFormExternalCode":"000000039","orderTypeExternalCode":"1","deliveryDate":"02.01.2025 00:00:00","totalSum":11900.0,"vatSum":0.0,"discount":0.0,"creationDate":"25.12.2024 13:49:25","operationExternalCode":"3","warehouseExternalCode":"El0000003","deliveryAddress":"Магнитогорск г., Карла Маркса просп., 229","comment":"comment","isReturn":False,"olCardType":4,"outletData":{"orderNo":"7","tempOutletCode":"potential_92_488131","inn":"236501939044","legalName":"Собержанский В.А. ИП","deliveryAddress":"Магнитогорск г., Карла Маркса просп., 229","phone":"+7 (918) 913-20-09","contactPerson":"Вадим"},"details":[{"orderNo":"7","productExternalCode":"Y000002248","price":11900.0,"basePrice":11900.0,"qty":1.0,"vat":0.0,"discount":0.0,"isReturnable":0,"orderDPromo":[]}],"orderHPromo":[]}]}
+
             if response['countOrder'] > 0:
                 result = create_orders(response)
                 if result:

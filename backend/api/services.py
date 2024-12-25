@@ -259,6 +259,7 @@ def create_orders(data):
     for order in orders:
         order_no = order['orderNo']
         order_doc = Order.objects.filter(orderNo=order_no)
+        logger.info(f'{order_no}================')
         if order_doc:
             ser_order = OrderSerializer(
                 order_doc[0],
@@ -268,7 +269,8 @@ def create_orders(data):
             ser_order = OrderSerializer(data=order)
         try:
             ser_order.is_valid(raise_exception=True)
-        except ValidationError:
+        except ValidationError as e:
+            logger.info(f'{e}================')
             result[order_no] = 'Exception created order'
             continue
         order_instance = ser_order.save()
