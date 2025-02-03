@@ -304,7 +304,7 @@ class SendRequest:
             if result is not None:
                 inns = [res['ENTITY_ID'] for res in result]
                 if code_B24:
-                    if code_B24 in inns:
+                    if str(code_B24) in inns:
                         SendRequest.check_company_field(
                             inn, legal_name, code_B24, delivery_address, contact_person, phone
                         )
