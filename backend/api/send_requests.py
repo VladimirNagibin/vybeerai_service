@@ -287,11 +287,10 @@ class SendRequest:
                 upd_company_result['upd_contact'] = 'error'
         return upd_company_result
 
-
     @staticmethod
     def check_company(inn, legal_name, code_B24, delivery_address,
                       contact_person, phone):
-        endpoint_inn = (f'/crm.requisite.list?filter[RQ_INN]={inn}'
+        endpoint_inn = (f'/crm.requisite.list?filter[RQ_INN]={inn}&filter[ENTITY_TYPE_ID]=4'
                         '&select[0]=ENTITY_TYPE_ID&select[1]=ENTITY_ID')
         customers_by_inn = SendRequest.send_request_method(
             endpoint_inn, {}, portal=f'{PORTAL_B24}{TOKEN_B24}',
@@ -403,13 +402,11 @@ class SendRequest:
                     if code_B24_B24 is None:
                         comments = ('В Битриксе существует больше '
                                     f'одной компании с ИНН {inn}. '
-                                    'Выберите подходящую вручную.')
-                        + comments
+                                    'Выберите подходящую вручную.') + comments
                     elif code_B24_B24 == 0:
                         comments = (f'У компании прописан код Б24 {code_B24}, '
                                     f'но ИНН {inn} не совпадает. '
-                                    'Выберите компанию вручную.')
-                        + comments
+                                    'Выберите компанию вручную.') + comments
                 rq_text = (f'fields[TITLE]=Выбирай заказ №{order_no}'
                            f'&fields[TYPE_ID]={TYPE_VYBEERAI}'
                            '&fields[CATEGORY_ID]=0'
@@ -425,6 +422,8 @@ class SendRequest:
                     outlet = Outlet.objects.get(pk=customer.id)
                     outlet.code_B24 = code_B24_B24
                     outlet.save()
+                SendRequest.logger.info(f"SAVE CODE B24 {rq_text}")
+                #sys.exit()  
                 # f'&fields[BEGINDATE]={str(.creationDate).replace(" ", "T")}'
                 # f'&fields[CLOSEDATE]={str(.deliveryDate).replace(" ", "T")}'
                 #  '&fields[COMPANY_ID]=0&fields[CONTACT_ID]=0'
