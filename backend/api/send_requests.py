@@ -263,6 +263,7 @@ class SendRequest:
                     upd_company_result['upd_address'] = 'error'
 
         # Check contact
+        contact_upd = False
         if contact_person:
             contact_upd = True
             endpoint = 'crm.company.contact.items.get'
