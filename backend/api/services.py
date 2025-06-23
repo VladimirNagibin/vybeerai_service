@@ -301,6 +301,8 @@ def create_orders(data):
                 legal_name = outlet_data.get('legalName', '')
                 delivery_address = outlet_data.get('deliveryAddress', '')
                 contact_person = outlet_data.get('contactPerson', '')
+                if not contact_person:
+                    contact_person = ''
                 inn = outlet_data['inn']
                 outlets = Outlet.objects.filter(
                     Q(inn=inn) & Q(tempOutletCode=temp_outlet_code)

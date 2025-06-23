@@ -241,6 +241,7 @@ class TypeStatusOrders(models.IntegerChoices):
     SHIPPED_VYBEERAI = 5, 'Отгружен в Выбирай'
     NOT_COMPLIT = 6, 'Выгружен не полностью'
 
+
 class Order(models.Model):
     orderNo = models.CharField(
         'Код заказа',
@@ -334,6 +335,7 @@ class Order(models.Model):
         return (f'Заказ: {self.orderNo} склад:{self.warehouse} '
                 f'{self.comment[:PRESENTATION_MAX_LENGTH]}')
 
+
 """
 class OutletData(models.Model):
     order = models.OneToOneField(
@@ -374,6 +376,7 @@ class OutletData(models.Model):
     def __str__(self):
         return self.company.legalName
 """
+
 
 class OrderDetail(models.Model):
     order = models.ForeignKey(
@@ -430,7 +433,7 @@ class OrderDetail(models.Model):
         return f'{self.order} {self.product} {self.qty}'
 
 
-#class SyncOrder(models.Model):
+# class SyncOrder(models.Model):
 #    order = models.OneToOneField(
 #        Order,
 #        on_delete=models.CASCADE,
