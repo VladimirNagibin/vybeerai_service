@@ -512,6 +512,7 @@ class SendRequest:
                 #     f'Order No: {order_no}. Order code B24 <{order.code_B24}> '
                 #     'exist, but status not send'
                 # )
-                
+                order.status = TypeStatusOrders.SEND_B24
+                order.save()
                 return {order_no: 'success'}
         return result
