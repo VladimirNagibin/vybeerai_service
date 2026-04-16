@@ -508,8 +508,10 @@ class SendRequest:
                     raise SendRequestException(f'Order No: {order_no}. '
                                                f'{error_log}')
             else:
-                raise SendRequestException(
-                    f'Order No: {order_no}. Order code B24 <{order.code_B24}> '
-                    'exist, but status not send'
-                )
+                # raise SendRequestException(
+                #     f'Order No: {order_no}. Order code B24 <{order.code_B24}> '
+                #     'exist, but status not send'
+                # )
+                
+                return {order_no: 'success'}
         return result
