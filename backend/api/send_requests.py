@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import sys
+from typing import Any
 
 from django.core.cache import cache
 from dotenv import load_dotenv
@@ -145,6 +146,7 @@ class SendRequest:
                      f'{r_text}')
         SendRequest.logger.critical(error_log)
         SendMessage.send_message(error_log)
+        SendRequest.send_message_B24(error_log) # TODO: send message B24
         raise SendRequestException(f'{error_log}')
 
     @staticmethod
@@ -159,6 +161,15 @@ class SendRequest:
         except Exception as e:
             return {'error': 'exception_request', 'error_description': e}
         return response.json()
+
+    @staticmethod
+    def send_message_B24(message, user_id = USER_B24):
+        # params: dict[str, Any] = {
+        #     "user_id": user_id,
+        #     "message": message,
+        # }
+        param = f"user_id={user_id}&message={message}"
+        SendRequest.send_request_B24("im.message.add", param)
 
     @staticmethod
     def normalization_phone(phone):
