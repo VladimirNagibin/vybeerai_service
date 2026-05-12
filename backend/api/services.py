@@ -130,7 +130,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for operation in OperationOutlet.objects.filter(
             Q(
                 outlet__status=TypeStatusCompany.CONFIRMED
-            ) | Q(outlet__status=TypeStatusCompany.COMPLIT)
+            ) # | Q(outlet__status=TypeStatusCompany.COMPLIT)
         ):
             data.append({
                 'outletExternalCode': operation
@@ -155,7 +155,7 @@ def get_data(way, status=STATUS_CHANGE_OR_UPDATE):
         for delivery_date in DeliveryDate.objects.filter(
             Q(
                 outlet__status=TypeStatusCompany.CONFIRMED
-            ) | Q(outlet__status=TypeStatusCompany.COMPLIT)
+            ) # | Q(outlet__status=TypeStatusCompany.COMPLIT)
         ):
             for deliv_date in delivery_date.deliveryDate.split(', '):
                 data.append({
