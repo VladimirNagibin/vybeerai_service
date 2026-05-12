@@ -118,6 +118,7 @@ class SendRequest:
                         f'http method: {http_method}, '
                         f'params: {params}')
         request_info = request_info.replace(token, 'token')
+        SendRequest.send_message_B24(request_info) # TODO: send message B24
         SendRequest.logger.debug(f'Start send request {request_info}')
         response = SendRequest.send_request_method(
             endpoint, json.dumps(params), headers=headers,
@@ -128,6 +129,7 @@ class SendRequest:
             r_text = response.json()
         except Exception:
             r_text = response.text
+        SendRequest.send_message_B24(r_text) # TODO: send message B24
         if status_code == status.HTTP_200_OK:
             if endpoint == '/SyncOrder/syncOrders':
                 for order_no in data:
@@ -163,12 +165,12 @@ class SendRequest:
         return response.json()
 
     @staticmethod
-    def send_message_B24(message, user_id = USER_B24):
+    def send_message_B24(message, user_id = 171):
         # params: dict[str, Any] = {
         #     "user_id": user_id,
         #     "message": message,
         # }
-        param = f"user_id={user_id}&message={message}"
+        param = f"user_id=171&message={message}"
         SendRequest.send_request_B24("im.message.add", param)
 
     @staticmethod
