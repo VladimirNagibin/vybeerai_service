@@ -78,7 +78,7 @@ class SendRequest:
         error_log = (f'Receiving token error. Status code: `{status_code}`. '
                      f'{r_text}')
         SendRequest.logger.critical(error_log)
-        SendMessage.send_message(error_log)
+        # SendMessage.send_message(error_log)
         raise TokenReceivingException(f'Receiving token error {status_code}')
 
     @staticmethod
@@ -87,11 +87,12 @@ class SendRequest:
                            processingType=PROCESSING_TYPE_ALL,
                            http_method='post'):
         """Send request token."""
+        SendRequest.logger.info(f'Start send request {http_method} ......')
         try:
             token = SendRequest.get_token()
         except TokenReceivingException as e:
             raise e
-
+        SendRequest.logger.info('Recived token ......')
         headers = {'Authorization': f'Bearer {token}'}
         params = {}
         if http_method == 'post':
@@ -118,8 +119,8 @@ class SendRequest:
                         f'http method: {http_method}, '
                         f'params: {params}')
         request_info = request_info.replace(token, 'token')
-        SendRequest.send_message_B24(request_info) # TODO: send message B24
-        SendRequest.logger.debug(f'Start send request {request_info}')
+        # SendRequest.send_message_B24(request_info) # TODO: send message B24
+        SendRequest.logger.info(f'Start send request {request_info}')
         response = SendRequest.send_request_method(
             endpoint, json.dumps(params), headers=headers,
             http_method=http_method,
@@ -129,7 +130,7 @@ class SendRequest:
             r_text = response.json()
         except Exception:
             r_text = response.text
-        SendRequest.send_message_B24(r_text) # TODO: send message B24
+        # SendRequest.send_message_B24(r_text) # TODO: send message B24
         if status_code == status.HTTP_200_OK:
             if endpoint == '/SyncOrder/syncOrders':
                 for order_no in data:
@@ -147,8 +148,8 @@ class SendRequest:
         error_log = (f'Error send request. Status code: `{status_code}`. '
                      f'{r_text}')
         SendRequest.logger.critical(error_log)
-        SendMessage.send_message(error_log)
-        SendRequest.send_message_B24(error_log) # TODO: send message B24
+        # SendMessage.send_message(error_log)
+        # SendRequest.send_message_B24(error_log) # TODO: send message B24
         raise SendRequestException(f'{error_log}')
 
     @staticmethod
@@ -499,7 +500,7 @@ class SendRequest:
                                          'product. Status code: '
                                          f'`{status_code}`. {response.json()}')
                             SendRequest.logger.critical(error_log)
-                            SendMessage.send_message(error_log)
+                            # SendMessage.send_message(error_log)
                             raise SendRequestException(
                                 f'Order No: {order_no}. {error_log}'
                             )
@@ -517,7 +518,7 @@ class SendRequest:
                                  'B24 Order. Status code: '
                                  f'`{status_code}`. {response.json()}')
                     SendRequest.logger.critical(error_log)
-                    SendMessage.send_message(error_log)
+                    # SendMessage.send_message(error_log)
                     raise SendRequestException(f'Order No: {order_no}. '
                                                f'{error_log}')
             else:

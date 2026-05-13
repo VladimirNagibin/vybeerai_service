@@ -56,6 +56,7 @@ def send_request(request, way):
                 result[dat['externalCode']] = respon
             response = result
         else:
+            logger.info(f"Start {endpoint}: {data}")
             response = SendRequest.send_request_token(endpoint, data)
         # processingType = 0 - all data / 1 - only for excange
         return Response(response, status=status.HTTP_200_OK)
